@@ -1,1 +1,3 @@
-import {} from 'jest';
+import createApp from './app';
+
+createApp()
