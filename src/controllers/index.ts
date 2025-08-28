@@ -17,5 +17,9 @@ export default async function(app: Application) {
     app.use(path, controller());
   });
 
+  app.use('/healthcheck', (req, res) => {
+    res.status(200).json({ message: 'OK' });
+  });
+
   logger.info('Controllers loaded successfully');
 }
