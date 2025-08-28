@@ -1,3 +1,10 @@
 import createApp from './app';
+import { config } from 'dotenv';
 
-createApp()
+async function main() {
+  config();
+
+  createApp()
+}
+
+main();

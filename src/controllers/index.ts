@@ -13,8 +13,8 @@ export default async function(app: Application) {
   logger.info('Loading controllers...');
   
   controllers.forEach(([path, controller]) => {
-    app.use(path, controller);
-    logger.info(`Mounted controller: ${path}`);
+    logger.info('  Mounting: ' + path + '...');
+    app.use(path, controller());
   });
 
   logger.info('Controllers loaded successfully');
