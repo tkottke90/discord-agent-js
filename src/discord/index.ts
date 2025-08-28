@@ -1,6 +1,7 @@
 // Require the necessary discord.js classes
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { Logger } from '../utils/logging';
+import { MessageCreate, MessageUpdate } from './message.events';
 
 const intents = [
   GatewayIntentBits.Guilds,
@@ -30,13 +31,9 @@ export default function initialize() {
     logger.info(`Ready! Logged in as ${readyClient.user.tag}`);
   });
 
-  client.on(Events.MessageCreate, message => {
-    logger.info(`Message from ${message.author.username}: ${message.toJSON()}`);
-  });
+  client.on(Events.MessageCreate, MessageCreate);
 
-  client.on(Events.MessageUpdate, message => {
-    logger.info(`Message from ${message?.author?.tag}: ${message.content}`);
-  });
+  client.on(Events.MessageUpdate, MessageUpdate);
 
   // Log in to Discord with your client's token
   client.login(token);
