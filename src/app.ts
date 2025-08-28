@@ -1,14 +1,10 @@
-import {type AppConfig } from './interfaces/app';
+import {AppConfigSchema, type AppConfig } from './interfaces/app';
 import express from 'express';
 import controllers from './controllers';
 
-export default function App(options?: Partial<AppConfig>, callback?: (app: express.Application, options: AppConfig) => void) {
+export default function App(options: Partial<AppConfig> = {}, callback?: (app: express.Application, options: AppConfig) => void) {
   // Normalize Options
-  const normalizedOptions: AppConfig = {
-    port: 3000,
-    host: 'localhost',
-    ...options,
-  };
+  const normalizedOptions: AppConfig = AppConfigSchema.parse(options);
 
   // Create Express App
   const app = express();

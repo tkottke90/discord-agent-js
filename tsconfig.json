@@ -39,6 +39,7 @@
     // Recommended Options
     "strict": true,
     "isolatedModules": true,
+    "esModuleInterop": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
