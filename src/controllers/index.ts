@@ -8,7 +8,7 @@ const controllers: [path: string, controller: () => Router][] = [
 ]
 
 export default async function(app: Application) {
-  const logger = new Logger();
+  const logger = new Logger('Controllers');
 
   logger.info('Loading controllers...');
   
