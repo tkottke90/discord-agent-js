@@ -10,10 +10,10 @@ const controllers: [path: string, controller: () => Router][] = [
 export default async function(app: Application) {
   const logger = new Logger('Controllers');
 
-  logger.info('Loading controllers...');
+  logger.debug('Loading controllers...');
   
   controllers.forEach(([path, controller]) => {
-    logger.info('  Mounting: ' + path + '...');
+    logger.debug('  Mounting: ' + path + '...');
     app.use(path, controller());
   });
 

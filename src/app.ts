@@ -32,7 +32,7 @@ export default function App(options: Partial<AppConfig> = {}, callback?: (app: e
     if (callback) {
       callback(app, normalizedOptions);
     } else {
-      logger.log(`Server listening on http://${normalizedOptions.host}:${normalizedOptions.port}`);
+      logger.info(`Server listening on http://${normalizedOptions.host}:${normalizedOptions.port}`);
     }
   });
 }

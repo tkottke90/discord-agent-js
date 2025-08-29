@@ -14,7 +14,7 @@ const intents = [
 
 export default function initialize() {
   const logger = new Logger('Discord');
-  logger.info('Initializing Discord...');
+  logger.debug('Initializing Discord...');
 
   const token = process.env.DISCORD_TOKEN ?? '';
 
