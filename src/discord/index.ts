@@ -15,6 +15,17 @@ const intents = [
   GatewayIntentBits.DirectMessageTyping
 ]
 
+function registerEvents(client: Client, logger: Logger) {
+  // When the client is ready, run this code (only once).
+  client.once(Events.ClientReady, readyClient => {
+    logger.info(`Ready! Logged in as ${readyClient.user.tag}`);
+  });
+
+  client.on(Events.MessageCreate, MessageCreate);
+
+  client.on(Events.MessageUpdate, MessageUpdate);
+}
+
 export default function initialize() {
   const logger = new Logger('Discord');
   logger.debug('Initializing Discord...');
@@ -37,14 +48,7 @@ export default function initialize() {
   // Create a new client instance
   const client = new Client({ intents });
 
-  // When the client is ready, run this code (only once).
-  client.once(Events.ClientReady, readyClient => {
-    logger.info(`Ready! Logged in as ${readyClient.user.tag}`);
-  });
-
-  client.on(Events.MessageCreate, MessageCreate);
-
-  client.on(Events.MessageUpdate, MessageUpdate);
+  registerEvents(client, logger);
 
   // Log in to Discord with your client's token
   client.login(parsedConfig.token);
