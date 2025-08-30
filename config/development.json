@@ -1,0 +1,16 @@
+{
+  "server": {
+    "port": 3000,
+    "host": "localhost"
+  },
+  "agents": [
+    {
+      "engine": "ollama",
+      "url": "http://10.0.0.6:11434"
+    }
+  ],
+  "discord": {
+    "token": "",
+    "inviteUrl": ""
+  }
+}

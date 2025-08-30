@@ -1,0 +1,6 @@
+{
+  "discord": {
+    "token": "DISCORD_TOKEN",
+    "inviteUrl": "DISCORD_INVITE_URL"
+  }
+}

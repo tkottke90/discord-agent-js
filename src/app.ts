@@ -4,12 +4,18 @@ import controllers from './controllers';
 import { HttpEventMiddleware } from './middleware/http-log.middleware';
 import createDiscordBot from './discord';
 import { Logger } from './utils/logging';
+import ConfigurationFile from 'config';
 
-export default function App(options: Partial<AppConfig> = {}, callback?: (app: express.Application, options: AppConfig) => void) {
+export default function createApp(callback?: (app: express.Application, options: AppConfig) => void) {
   const logger = new Logger('Server');
 
   // Normalize Options
-  const normalizedOptions: AppConfig = AppConfigSchema.parse(options);
+  let config = {};
+  if (ConfigurationFile.has('server')) {
+    config = { ...ConfigurationFile.get<AppConfig>('server') };
+  }
+
+  const normalizedOptions: AppConfig = AppConfigSchema.parse(config);
 
   // Create Express App
   const app = express();
