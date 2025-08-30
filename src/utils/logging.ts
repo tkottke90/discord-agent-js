@@ -35,7 +35,7 @@ export class Logger extends Console {
     ...optionalParams: unknown[]
   ) {
     const logWithLabel = this.addTag(this.name, message);
-    const logWithLevel = this.addTag(method.toUpperCase(), logWithLabel);
+    const logWithLevel = this.addTag(`${method.toUpperCase()}     `.slice(0, 5), logWithLabel);
     const logWithTimestamp = this.addTag(new Date().toISOString(), logWithLevel);
 
     super[method](
