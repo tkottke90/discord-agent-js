@@ -5,20 +5,28 @@ import { MessageCreate, MessageUpdate } from './message.events';
 import ConfigurationFile from 'config';
 import { DiscordConfigSchema } from './interfaces';
 import { prettyZodErrors } from '../utils/zod-errors';
+import { checkBotPermissions, generateInviteUrl } from './permissions';
 
 const intents = [
+  GatewayIntentBits.DirectMessages,
+  GatewayIntentBits.DirectMessageTyping,
   GatewayIntentBits.Guilds,
   GatewayIntentBits.GuildMessages,
-  GatewayIntentBits.MessageContent,
+  GatewayIntentBits.GuildMessageTyping,
   GatewayIntentBits.GuildMembers,
-  GatewayIntentBits.DirectMessages,
-  GatewayIntentBits.DirectMessageTyping
+  GatewayIntentBits.MessageContent
 ]
 
 function registerEvents(client: Client, logger: Logger) {
   // When the client is ready, run this code (only once).
   client.once(Events.ClientReady, readyClient => {
     logger.info(`Ready! Logged in as ${readyClient.user.tag}`);
+
+    // Check bot permissions in all guilds
+    checkBotPermissions(readyClient);
+
+    // Log invite URL for easy permission setup
+    logger.debug(`Invite URL: ${generateInviteUrl(readyClient.user.id)}`);
   });
 
   client.on(Events.MessageCreate, MessageCreate);
