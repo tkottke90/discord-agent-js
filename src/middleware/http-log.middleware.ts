@@ -1,6 +1,6 @@
 import express from 'express';
-import { Logger } from '../utils/logging';
-import { NS_PER_SEC, NS_TO_MS } from '../constants';
+import { Logger } from '../utils/logging.js';
+import { NS_PER_SEC, NS_TO_MS } from '../constants.js';
 import crypto from 'crypto';
 
 export function HttpEventMiddleware(

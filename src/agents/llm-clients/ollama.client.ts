@@ -1,8 +1,8 @@
 import z from 'zod';
-import { Logger } from '../../utils/logging';
-import { LLMClientConfigSchema } from '../types/client-config';
-import * as OllamaTypes from '../types/ollama';
-import { WorkerConfig } from '../types/worker';
+import { Logger } from '../../utils/logging.js';
+import { LLMClientConfigSchema } from '../types/client-config.js';
+import * as OllamaTypes from '../types/ollama.js';
+import { WorkerConfig } from '../types/worker.js';
 
 export const OllamaConfigSchema = LLMClientConfigSchema.clone();
 

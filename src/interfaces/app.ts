@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 export const AppConfigSchema = z.object({
     port: z.number().positive().int().default(3000),

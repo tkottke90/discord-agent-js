@@ -1,7 +1,7 @@
-import { WorkerPool } from './pool';
+import { WorkerPool } from './pool.js';
 import ConfigurationFile from 'config';
-import type { WorkerPoolConfig } from './types/worker';
-import { Logger } from '../utils/logging';
+import type { WorkerPoolConfig } from './types/worker.js';
+import { Logger } from '../utils/logging.js';
 
 // Create Pool Singleton
 const pool = new WorkerPool();

@@ -1,8 +1,8 @@
 import z from 'zod';
-import { Logger } from '../../utils/logging';
-import { LLMClientConfigSchema } from '../types/client-config';
-import * as DOAITypes from '../types/digital-ocean-ai';
-import { prettyZodErrors } from '../../utils/zod-errors';
+import { Logger } from '../../utils/logging.js';
+import { LLMClientConfigSchema } from '../types/client-config.js';
+import * as DOAITypes from '../types/digital-ocean-ai.js';
+import { prettyZodErrors } from '../../utils/zod-errors.js';
 
 export const DOAIConfigSchema = LLMClientConfigSchema.extend({
   auth: z.object({

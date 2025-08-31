@@ -1,11 +1,11 @@
 // Require the necessary discord.js classes
 import { Client, Events, GatewayIntentBits } from 'discord.js';
-import { Logger } from '../utils/logging';
-import { MessageCreate, MessageUpdate } from './message.events';
+import { Logger } from '../utils/logging.js';
+import { MessageCreate, MessageUpdate } from './message.events.js';
 import ConfigurationFile from 'config';
-import { DiscordConfigSchema } from './interfaces';
-import { prettyZodErrors } from '../utils/zod-errors';
-import { checkBotPermissions, generateInviteUrl } from './permissions';
+import { DiscordConfigSchema } from './interfaces.js';
+import { prettyZodErrors } from '../utils/zod-errors.js';
+import { checkBotPermissions, generateInviteUrl } from './permissions.js';
 
 const intents = [
   GatewayIntentBits.DirectMessages,

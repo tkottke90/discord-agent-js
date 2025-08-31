@@ -1,5 +1,5 @@
 import { Client, PermissionFlagsBits } from 'discord.js';
-import { Logger } from '../utils/logging';
+import { Logger } from '../utils/logging.js';
 
 /**
  * Required permissions for the Discord bot to function properly

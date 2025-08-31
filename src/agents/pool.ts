@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { Worker } from 'node:worker_threads';
-import { STATE, WorkerResponse } from './types/worker'; 
-import { Logger } from '../utils/logging';
+import { STATE, WorkerResponse } from './types/worker.js';
+import { Logger } from '../utils/logging.js';
 
 type Job = {
   jobId: string,
@@ -26,7 +26,7 @@ export class WorkerPool {
 
   public addWorker(workerId: string = crypto.randomUUID()) {
     this.logger.debug(`Adding Worker ${workerId}`);
-    const worker = new Worker('./src/agents/worker.ts', { workerData: {} });
+    const worker = new Worker('./dist/agents/worker.js', { workerData: {} });
 
     // Listen for status updates
     worker.on('message', (message: WorkerResponse) => {

@@ -1,11 +1,11 @@
-import {AppConfigSchema, type AppConfig } from './interfaces/app';
+import {AppConfigSchema, type AppConfig } from './interfaces/app.js';
 import express from 'express';
-import controllers from './controllers';
-import { HttpEventMiddleware } from './middleware/http-log.middleware';
-import createDiscordBot from './discord';
-import { Logger } from './utils/logging';
+import controllers from './controllers/index.js';
+import { HttpEventMiddleware } from './middleware/http-log.middleware.js';
+import createDiscordBot from './discord/index.js';
+import { Logger } from './utils/logging.js';
 import ConfigurationFile from 'config';
-import * as Agents from './agents';
+import * as Agents from './agents/index.js';
 
 export default function createApp(callback?: (app: express.Application, options: AppConfig) => void) {
   const logger = new Logger('Server');

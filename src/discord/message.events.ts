@@ -1,10 +1,10 @@
 import type { Message, OmitPartialGroupDMChannel, PartialMessage } from "discord.js";
-import { Logger } from "../utils/logging";
-// import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client';
+import { Logger } from "../utils/logging.js";
+// import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client.js';
 import ConfigurationFile from 'config';
-import { DigitalOceanAIClient, DOAIConfig } from "../agents/llm-clients/digital-ocean.client";
-import { NonStreamChoice } from "../agents/types/digital-ocean-ai";
-import { getPool } from '../agents';
+import { DigitalOceanAIClient, DOAIConfig } from "../agents/llm-clients/digital-ocean.client.js";
+import { NonStreamChoice } from "../agents/types/digital-ocean-ai.js";
+import { getPool } from '../agents/index.js';
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.

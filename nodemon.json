@@ -1,7 +1,7 @@
 {
   "watch": ["src"],
   "ext": "ts",
-  "exec": "NODE_ENV=development ts-node src/index.ts",
+  "exec": "NODE_ENV=development node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/index.ts",
   "delay": 500,
   "signal": "SIGTERM"
 }

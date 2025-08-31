@@ -1,6 +1,6 @@
 // Ollama API TypeScript Definitions
 // Based on official Ollama API documentation
-import type { JSONSchema, Tool, ToolCall, ToolFunction, Message, MessageRole, ChatRequest } from './chat';
+import type { JSONSchema, Tool, ToolCall, ToolFunction, Message, MessageRole, ChatRequest } from './chat.js';
 
 // Common types
 export interface ModelOptions {

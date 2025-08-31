@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 export const LLMClientConfigSchema = z.object({
   engine: z.string().min(1),

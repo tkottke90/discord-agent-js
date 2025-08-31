@@ -1,7 +1,7 @@
 import { Application, Router } from 'express';
-import { Logger } from '../utils/logging';
+import { Logger } from '../utils/logging.js';
 
-import Chat from './v1/chat';
+import Chat from './v1/chat/index.js';
 
 const controllers: [path: string, controller: () => Router][] = [
   ['/v1/chat', Chat]
