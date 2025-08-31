@@ -1,6 +1,6 @@
 import z from 'zod';
 import { Logger } from '../../utils/logging.js';
-import { LLMClientConfigSchema } from '../types/client-config.js';
+import { LLMClientConfigSchema } from '../types/client.js';
 import * as OllamaTypes from '../types/ollama.js';
 import { WorkerConfig } from '../types/worker.js';
 

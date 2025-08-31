@@ -1,6 +1,6 @@
 import z from 'zod';
 import { Logger } from '../../utils/logging.js';
-import { LLMClientConfigSchema } from '../types/client-config.js';
+import { LLMClientConfigSchema } from '../types/client.js';
 import * as DOAITypes from '../types/digital-ocean-ai.js';
 import { prettyZodErrors } from '../../utils/zod-errors.js';
 
