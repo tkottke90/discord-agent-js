@@ -147,7 +147,7 @@ export interface ChatCompletionRequest {
 }
 
 // Response types
-export interface ChatCompletionResponse {
+export interface ChatCompletionResponse<Choices extends StreamChoice[] | NonStreamChoice[]> {
   /** Unique identifier for the completion */
   id: string;
   /** Object type (e.g., "chat.completion") */
@@ -157,7 +157,7 @@ export interface ChatCompletionResponse {
   /** Model used for the completion */
   model: string;
   /** Array of completion choices */
-  choices: StreamChoice[] | NonStreamChoice[];
+  choices: Choices;
   /** Metadata about triggered guardrails */
   guardrails: GuardrailsMeta;
   /** Metadata about called functions */
@@ -196,13 +196,6 @@ export interface DOAIClient {
    */
   chatCompletions(request: ChatCompletionRequest): Promise<ChatCompletionResponse>;
 
-  /**
-   * Generate AI response with streaming.
-   *
-   * @param request - The chat completion request with stream: true
-   * @returns AsyncIterable yielding streaming completion responses
-   */
-  chatCompletionsStream(request: ChatCompletionRequest & { stream: true }): StreamingResponse<ChatCompletionResponse>;
 
   /**
    * Check the health status of the API.

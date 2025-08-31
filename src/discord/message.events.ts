@@ -2,6 +2,8 @@ import type { Message, OmitPartialGroupDMChannel, PartialMessage } from "discord
 import { Logger } from "../utils/logging";
 import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client';
 import ConfigurationFile from 'config';
+import { DigitalOceanAIClient, DOAIConfig } from "../agents/llm-clients/digital-ocean.client";
+import { NonStreamChoice } from "../agents/types/digital-ocean-ai";
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.
@@ -67,20 +69,26 @@ export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<b
 
     const hasMention = message.mentions.has(message.client.user!.id);
 
-    const ollamaConfig = ConfigurationFile.get<Array<OllamaConfig>>('agents');
-    const ollama = new OllamaClient(ollamaConfig[0]!);
+    // const ollamaConfig = ConfigurationFile.get<Array<OllamaConfig>>('agents');
+    // const ollama = new OllamaClient(ollamaConfig[0]!);
 
-    const { response } = await ollama.generate({
-      model: 'mistral:7b',
-      system,
-      prompt: message.content
+    const doaiConfig = ConfigurationFile.get<Array<DOAIConfig>>('agents')[1]!;
+    const doai = new DigitalOceanAIClient(doaiConfig);
+
+    const response = await doai.chatCompletions<NonStreamChoice[]>({
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: message.content }
+      ]
     });
 
-    // Await the reply systemto handle any permission errors
+    const chatResponse = response.choices[0];
+
+    // Await the reply system to handle any permission errors
     if (hasMention) {
-      await message.reply(response);
+      await message.reply(chatResponse?.message?.content ?? '');
     } else {
-      await message.channel.send(response);
+      await message.channel.send(chatResponse?.message?.content ?? '');
     }
 
     logger.debug('Successfully sent reply');
