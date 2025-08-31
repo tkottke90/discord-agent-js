@@ -1,5 +1,6 @@
 // Ollama API TypeScript Definitions
 // Based on official Ollama API documentation
+import type { JSONSchema, Tool, ToolCall, ToolFunction, Message, MessageRole, ChatRequest } from './chat';
 
 // Common types
 export interface ModelOptions {
@@ -60,47 +61,6 @@ export interface ModelInfo {
   'tokenizer.ggml.tokens'?: string[];
 }
 
-// JSON Schema types for structured outputs
-export interface JSONSchema {
-  type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
-  properties?: Record<string, JSONSchema>;
-  items?: JSONSchema;
-  required?: string[];
-  enum?: unknown[];
-  description?: string;
-}
-
-// Tool calling types
-export interface ToolFunction {
-  name: string;
-  description: string;
-  parameters: JSONSchema;
-}
-
-export interface Tool {
-  type: 'function';
-  function: ToolFunction;
-}
-
-export interface ToolCall {
-  function: {
-    name: string;
-    arguments: Record<string, unknown>;
-  };
-}
-
-// Message types for chat
-export type MessageRole = 'system' | 'user' | 'assistant' | 'tool';
-
-export interface Message {
-  role: MessageRole;
-  content: string;
-  thinking?: string; // for thinking models
-  images?: string[]; // base64-encoded images for multimodal models
-  tool_calls?: ToolCall[];
-  tool_name?: string; // for tool response messages
-}
-
 // Generate completion types
 export interface GenerateRequest {
   model: string;
@@ -131,18 +91,6 @@ export interface GenerateResponse {
   prompt_eval_duration?: number;
   eval_count?: number;
   eval_duration?: number;
-}
-
-// Chat completion types
-export interface ChatRequest {
-  model: string;
-  messages: Message[];
-  tools?: Tool[];
-  think?: boolean; // for thinking models
-  format?: 'json' | JSONSchema;
-  options?: ModelOptions;
-  stream?: boolean;
-  keep_alive?: string | number;
 }
 
 export interface ChatResponse {
@@ -340,15 +288,6 @@ export interface OllamaClient {
   pushBlob(params: PushBlobParams, data: Blob | Buffer): Promise<void>;
 }
 
-// Configuration types
-export interface OllamaConfig {
-  host?: string;
-  port?: number;
-  protocol?: 'http' | 'https';
-  timeout?: number;
-  headers?: Record<string, string>;
-}
-
 // Utility types for type guards
 export type GenerateStreamResponse = GenerateResponse & { done: false } | GenerateResponse & { done: true };
 export type ChatStreamResponse = ChatResponse & { done: false } | ChatResponse & { done: true };
@@ -357,6 +296,10 @@ export type ChatStreamResponse = ChatResponse & { done: false } | ChatResponse &
 export type {
   ModelOptions,
   ModelDetails,
+  GenerateRequest,
+  GenerateResponse,
+  ChatRequest,
+  ChatResponse,
   ModelInfo,
   JSONSchema,
   Tool,

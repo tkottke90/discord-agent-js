@@ -1,4 +1,11 @@
+import z from 'zod';
+import { Logger } from '../../utils/logging';
+import { LLMClientConfigSchema } from '../types/client-config';
 import * as OllamaTypes from '../types/ollama';
+
+export const OllamaConfigSchema = LLMClientConfigSchema.clone();
+
+export type OllamaConfig = z.infer<typeof OllamaConfigSchema>;
 
 /**
  * Ollama API Client
@@ -8,22 +15,26 @@ export class OllamaClient implements OllamaTypes.OllamaClient {
   private readonly baseUrl: string;
   private readonly timeout: number;
   private readonly headers: Record<string, string>;
+  private readonly logger: Logger;
 
-  constructor(config: OllamaTypes.OllamaConfig = {}) {
+  constructor(config: OllamaConfig) {
+    this.logger = new Logger('OllamaClient');
+
     const {
-      host = 'localhost',
-      port = 11434,
-      protocol = 'http',
-      timeout = 30000,
-      headers = {}
-    } = config;
+      baseUrl,
+      timeout,
+      headers
+    } = OllamaConfigSchema.parse(config);
+  
 
-    this.baseUrl = `${protocol}://${host}:${port}`;
+    this.baseUrl = baseUrl;
     this.timeout = timeout;
     this.headers = {
       'Content-Type': 'application/json',
       ...headers
     };
+
+    this.logger.debug(`Initialized (baseUrl=${this.baseUrl}, timeout=${this.timeout})`);
   }
 
   /**
