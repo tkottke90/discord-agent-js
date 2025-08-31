@@ -1,56 +1,84 @@
+import crypto from 'node:crypto';
 import { Worker } from 'node:worker_threads';
+import { STATE, WorkerResponse } from './types/worker'; 
+import { Logger } from '../utils/logging';
 
-interface WorkerConfig {
-  engine: string;
-  baseUrl: string;
-  auth?: string;
+type Job = {
+  jobId: string,
+  data: unknown,
+  priority: number,
+  createdAt: number
 }
 
-const workerPool: Map<string, Worker> = new Map();
+type CreateJob = Omit<Job, 'jobId' | 'createdAt' | 'priority'> & { priority?: number };
 
-export function addWorker(workerId: string, config: WorkerConfig) {
-  workerPool.set(workerId, new Worker('./worker.ts', { workerData: config }));
-}
+export class WorkerPool {
+  private workers: Map<string, Worker>;
+  private workerStatus = new Map<string, STATE>();
+  
+  private jobQueue: Job[] = [];
 
-export function count() {
-  return workerPool.size;
-}
-
-export function hasWorker(workerId: string) {
-  return workerPool.has(workerId);
-}
-
-export function getWorker(workerId: string) {
-  if (!workerPool.has(workerId)) {
-    throw new Error(`Worker ${workerId} not found`);
+  private logger = new Logger('WorkerPool');
+  
+  constructor() {
+    this.workers = new Map();
   }
 
-  return workerPool.get(workerId)!
-}
+  public addWorker(workerId: string = crypto.randomUUID()) {
+    this.logger.debug(`Adding Worker ${workerId}`);
+    const worker = new Worker('./src/agents/worker.ts', { workerData: {} });
 
-export function keys() {
-  return workerPool.keys();
-}
+    // Listen for status updates
+    worker.on('message', (message: WorkerResponse) => {
+      if (message.action === 'response:status') {
+        this.logger.debug(`Worker Status Received ${workerId} - ${STATE[message.state]}`);
+        this.workerStatus.set(workerId, message.state);
+      }
+    });
 
-export function releaseWorker(workerId: string) {
-  if (workerPool.has(workerId)) {
-    workerPool.get(workerId)?.terminate();
-    workerPool.delete(workerId);
+    this.workers.set(workerId, worker);
   }
-}
 
-export function triggerWorker(workerId: string, message: unknown) {
-  if (workerPool.has(workerId)) {
-    const worker = workerPool.get(workerId)!;
+  public async addJob(job: CreateJob) {
+    this.jobQueue.push({
+      ...job,
+      jobId: crypto.randomUUID(),
+      priority: job.priority ?? 0,
+      createdAt: Date.now()
+    });
 
-    worker.postMessage({
-      action: 'status'
+    // Sort by Priority then by createdAt
+    this.jobQueue.sort((a, b) => {
+      if (a.priority === b.priority) {
+        return a.createdAt - b.createdAt;
+      }
+      return a.priority - b.priority;
     });
   }
-  
-  if (!workerPool.has(workerId)) {
-    throw new Error(`Worker ${workerId} not found`);
+
+  public getWorker(workerId: string) {
+    return this.workers.get(workerId);
   }
 
-  workerPool.get(workerId)?.postMessage(message);
+  public removeWorker(workerId: string) {
+    this.workers.delete(workerId);
+  }
+
+  public getWorkerCount() {
+    return this.workers.size;
+  }
+
+  public hasWorker(workerId: string) {
+    return this.workers.has(workerId);
+  }
+
+  public keys() {
+    return this.workers.keys();
+  }
+
+  public async getWorkerStatus(workerId: string) {
+    if (this.hasWorker(workerId)) { 
+      return this.workerStatus.get(workerId);
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { Logger } from "../utils/logging";
 import ConfigurationFile from 'config';
 import { DigitalOceanAIClient, DOAIConfig } from "../agents/llm-clients/digital-ocean.client";
 import { NonStreamChoice } from "../agents/types/digital-ocean-ai";
+import { getPool } from '../agents';
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.

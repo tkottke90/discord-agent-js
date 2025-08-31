@@ -1,8 +1,8 @@
-import { OllamaClient } from './llm-clients/ollama.client';
-import { DigitalOceanAIClient } from './llm-clients/digital-ocean.client';
+import { OllamaClient } from './llm-clients/ollama.client.js';
+import { DigitalOceanAIClient } from './llm-clients/digital-ocean.client.js';
 import { parentPort, workerData, threadId } from 'node:worker_threads';
-import { STATE, WorkerConfig } from './types/worker';
-import { Logger } from '../utils/logging';
+import { STATE, WorkerConfig, WorkerResponse } from './types/worker.js';
+import { Logger } from '../utils/logging.js';
 
 function main() {
   const logger = new Logger(`Worker-${threadId}`);
@@ -13,7 +13,12 @@ function main() {
     logger.debug(`Worker-${threadId} received message: ${JSON.stringify(message)}`);
   });
 
-  parentPort?.postMessage({ threadId, state: STATE.IDLE });
+  const setupResponse: WorkerResponse = {
+    action: 'response:status',
+    state: STATE.IDLE
+  };
+
+  parentPort?.postMessage(setupResponse);
 }
 
 main();

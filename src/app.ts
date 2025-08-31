@@ -5,6 +5,7 @@ import { HttpEventMiddleware } from './middleware/http-log.middleware';
 import createDiscordBot from './discord';
 import { Logger } from './utils/logging';
 import ConfigurationFile from 'config';
+import * as Agents from './agents';
 
 export default function createApp(callback?: (app: express.Application, options: AppConfig) => void) {
   const logger = new Logger('Server');
@@ -21,7 +22,6 @@ export default function createApp(callback?: (app: express.Application, options:
   const app = express();
 
   // Setup Global Middleware
-
   app.use(HttpEventMiddleware);
 
   // Setup Controllers
@@ -30,6 +30,9 @@ export default function createApp(callback?: (app: express.Application, options:
   app.get('/', (req, res) => {
     res.status(200).json({ message: 'Hello World!' });
   });
+
+  // Start Agents
+  Agents.initialize();
 
   // Start Discord Bot
   createDiscordBot();

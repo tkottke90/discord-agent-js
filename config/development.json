@@ -3,10 +3,14 @@
     "port": 3000,
     "host": "localhost"
   },
+  "workers": {
+    "min": 1,
+    "max": 10
+  },
   "agents": [
     {
       "engine": "ollama",
-      "url": "http://localhost:11434"
+      "baseUrl": "http://localhost:11434"
     }
   ],
   "discord": {
