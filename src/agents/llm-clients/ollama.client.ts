@@ -2,6 +2,7 @@ import z from 'zod';
 import { Logger } from '../../utils/logging';
 import { LLMClientConfigSchema } from '../types/client-config';
 import * as OllamaTypes from '../types/ollama';
+import { WorkerConfig } from '../types/worker';
 
 export const OllamaConfigSchema = LLMClientConfigSchema.clone();
 
@@ -17,7 +18,7 @@ export class OllamaClient implements OllamaTypes.OllamaClient {
   private readonly headers: Record<string, string>;
   private readonly logger: Logger;
 
-  constructor(config: OllamaConfig) {
+  constructor(config: WorkerConfig) {
     this.logger = new Logger('OllamaClient');
 
     const {

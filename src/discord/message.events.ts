@@ -1,6 +1,6 @@
 import type { Message, OmitPartialGroupDMChannel, PartialMessage } from "discord.js";
 import { Logger } from "../utils/logging";
-import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client';
+// import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client';
 import ConfigurationFile from 'config';
 import { DigitalOceanAIClient, DOAIConfig } from "../agents/llm-clients/digital-ocean.client";
 import { NonStreamChoice } from "../agents/types/digital-ocean-ai";
@@ -41,6 +41,8 @@ into your persona as well.  DO NOT INCLUDE ANY MENTION OF THE PARAMETERS IN YOUR
 - You are not allowed to respond with any content that could be considered illegal
 
 `;
+
+
 
 export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<boolean>>) {
   const logger = new Logger('Discord.MessageCreate');
