@@ -1,0 +1,747 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GenAI Agent API Docs",
+    "description": "This API provides functionalities for querying your agent. It includes endpoints for checking the health of the API and generating responses based on queries and retrieved documents.",
+    "version": "1.0.0",
+    "source": "https://udubprby3wudv76jcukm3geo.agents.do-ai.run/openapi.json"
+  },
+  "paths": {
+    "/api/v1/chat/completions": {
+      "post": {
+        "summary": "Generate AI Response",
+        "description": "Generates a response based on query, conversation history, and additional factors such as routing, function-calling, and document retrieval.",
+        "operationId": "generate_stream_api_v1_chat_completions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_generate_stream_api_v1_chat_completions_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/routers__models__Response"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "This endpoint is used to check if the API is running and healthy. It returns a status message indicating the API's health.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/main__Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_generate_stream_api_v1_chat_completions_post": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Messages",
+            "description": "List of messages representing the conversation history.",
+            "default": []
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "minimum": 0.0,
+            "title": "Temperature",
+            "description": "Sampling temperature, from 0 to 2.\n\nHigher values (e.g., 0.8) make the response more random, while lower values (e.g., 0.2) make it more deterministic."
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "minimum": 0.01,
+            "title": "Top P",
+            "description": "Nucleus sampling threshold. Only the top tokens with cumulative probability up to top_p are considered."
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "description": "Maximum tokens to generate in the completion."
+          },
+          "max_completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "minimum": 1.0,
+            "title": "Max Completion Tokens",
+            "description": "Maximum tokens to generate in the completion., Interchangeable with max_tokens."
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Response?",
+            "description": "If true, streams the response; otherwise returns it as a single JSON object.",
+            "default": false
+          },
+          "k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "minimum": 0.0,
+            "title": "K",
+            "description": "Top results to return the agent's associated knowledge bases."
+          },
+          "retrieval_method": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(rewrite|step_back|sub_queries|none)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieval Method",
+            "description": "Strategy for retrieval-augmented generation.\n\n<b>rewrite</b>: Rewrites the query to improve retrieval.\n\n<b>step_back</b>: Generates a broader query to help retrieve relevant background information.\n\n<b>sub_queries</b>: Generates 3-4 sub-queries to help retrieve relevant information.\n\n<b>none</b>: No retrieval method applied.",
+            "examples": [
+              "rewrite",
+              "step_back",
+              "sub_queries",
+              "none"
+            ]
+          },
+          "frequency_penalty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "maximum": 2.0,
+            "minimum": -2.0,
+            "title": "Frequency Penalty",
+            "description": "Penalty for new tokens based on their existing frequency in the text so far.\n\nPositive values decrease the model's likelihood to repeat the same line verbatim.",
+            "default": 0.0
+          },
+          "presence_penalty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "maximum": 2.0,
+            "minimum": -2.0,
+            "title": "Presence Penalty",
+            "description": "Penalty for new tokens based on their presence in the text so far.\n\nPositive values increase the model's likelihood to talk about new topics.",
+            "default": 0.0
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "A list of stop sequences that the model should stop generating at."
+          },
+          "stream_options": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StreamOptions"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Options",
+            "description": "Optional parameters for controlling the stream response.",
+            "examples": [
+              {
+                "include_usage": true
+              }
+            ]
+          },
+          "kb_filters": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/KBFilter"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knowledge Base Filters",
+            "description": "Filters to apply to the knowledge base.Only items that match the filters will be used for retrieval.\n\nIndex is required while path is optional.",
+            "examples": [
+              [
+                {
+                  "index": "0000000-0000-0000-0000-000000000000",
+                  "path": "some_folder/some_file.csv"
+                },
+                {
+                  "index": "1111111-1111-1111-1111-111111111111"
+                }
+              ]
+            ]
+          },
+          "filter_kb_content_by_query_metadata": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extract and filter by metadata?",
+            "description": "If true, metadata is extracted from the query and used to filter data retrieved from the Knowledge Base.",
+            "default": false
+          },
+          "instruction_override": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instruction Override",
+            "description": "Override the default instruction for the agent."
+          },
+          "include_functions_info": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Functions Info",
+            "description": "If true, includes metadata about called functions in the response.",
+            "default": false
+          },
+          "include_retrieval_info": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Retrieval Info",
+            "description": "If true, includes metadata about retrieved documents in the response.",
+            "default": false
+          },
+          "include_guardrails_info": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Guardrails Info",
+            "description": "If true, includes metadata about guardrails triggered in the response.",
+            "default": false
+          },
+          "provide_citations": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include in response citations",
+            "description": "If true, includes citations within the response."
+          }
+        },
+        "type": "object",
+        "title": "Body_generate_stream_api_v1_chat_completions_post"
+      },
+      "FilteredGuardrail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "index": {
+            "type": "string",
+            "title": "Index"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "index",
+          "score"
+        ],
+        "title": "FilteredGuardrail",
+        "description": "Filtered guardrail information for response metadata."
+      },
+      "FunctionsMeta": {
+        "properties": {
+          "called_functions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Called Functions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "called_functions"
+        ],
+        "title": "FunctionsMeta",
+        "description": "Metadata for called functions."
+      },
+      "GuardrailsMeta": {
+        "properties": {
+          "triggered_guardrails": {
+            "items": {
+              "$ref": "#/components/schemas/ViolationDetail"
+            },
+            "type": "array",
+            "title": "Triggered Guardrails"
+          }
+        },
+        "type": "object",
+        "required": [
+          "triggered_guardrails"
+        ],
+        "title": "GuardrailsMeta",
+        "description": "Metadata for triggered guardrails."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KBFilter": {
+        "properties": {
+          "index": {
+            "type": "string",
+            "title": "Index(KB UUID)",
+            "description": "The index of the knowledge base from which you want to retrieve data from."
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File/Directory Path",
+            "description": "The path/directory you want to retrieve data from."
+          }
+        },
+        "type": "object",
+        "required": [
+          "index"
+        ],
+        "title": "KBFilter"
+      },
+      "Message": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id",
+            "default": ""
+          },
+          "role": {
+            "type": "string",
+            "title": "Role of the Message",
+            "description": "The role of the message sender, e.g., user, assistant, system, or developer."
+          },
+          "content": {
+            "type": "string",
+            "title": "Message Content",
+            "description": "The content of the message."
+          },
+          "sentTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Senttime",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "Message"
+      },
+      "NonStreamChoice": {
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/Message"
+          },
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "index"
+        ],
+        "title": "NonStreamChoice",
+        "description": "Choice object for non-streaming responses."
+      },
+      "RetrievalMeta": {
+        "properties": {
+          "retrieved_data": {
+            "items": {
+              "$ref": "#/components/schemas/FilteredGuardrail"
+            },
+            "type": "array",
+            "title": "Retrieved Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "retrieved_data"
+        ],
+        "title": "RetrievalMeta",
+        "description": "Metadata for retrieved documents."
+      },
+      "StreamChoice": {
+        "properties": {
+          "delta": {
+            "$ref": "#/components/schemas/Message"
+          },
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "finish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delta",
+          "index",
+          "finish_reason"
+        ],
+        "title": "StreamChoice",
+        "description": "Choice object for streaming responses."
+      },
+      "StreamOptions": {
+        "properties": {
+          "include_usage": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Usage",
+            "description": "If true, includes token usage information in the response.",
+            "default": false,
+            "example": true
+          }
+        },
+        "type": "object",
+        "title": "StreamOptions",
+        "description": "Stream options for controlling additional response information.\n\nAttributes:\n    include_usage (bool): If true, includes token usage information in the response."
+      },
+      "UsageMeta": {
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "title": "Completion Tokens"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens"
+          }
+        },
+        "type": "object",
+        "title": "UsageMeta",
+        "description": "Metadata for token usage information.\n\nAttributes:\n    prompt_tokens (int): Number of tokens in the prompt.\n    completion_tokens (int): Number of tokens in the completion.\n    total_tokens (int): Total tokens used (prompt + completion)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ViolationDetail": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable violation description"
+          },
+          "rule_name": {
+            "type": "string",
+            "title": "Rule Name",
+            "description": "Identifier of the violated rule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "rule_name"
+        ],
+        "title": "ViolationDetail",
+        "description": "Details about a guardrail violation.\n\nAttributes:\n    message: Human-readable description of the violation.\n    rule_name: Identifier for the specific rule that was violated."
+      },
+      "main__Response": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "Response",
+        "description": "TypedDict for the health check response model.\n\nAttributes:\nstatus (str): The status of the API."
+      },
+      "routers__models__Response": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "object": {
+            "type": "string",
+            "title": "Object"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "choices": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/StreamChoice"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/NonStreamChoice"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Choices"
+          },
+          "guardrails": {
+            "$ref": "#/components/schemas/GuardrailsMeta"
+          },
+          "functions": {
+            "$ref": "#/components/schemas/FunctionsMeta"
+          },
+          "retrieval": {
+            "$ref": "#/components/schemas/RetrievalMeta"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsageMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "created",
+          "model",
+          "choices",
+          "guardrails",
+          "functions",
+          "retrieval",
+          "usage"
+        ],
+        "title": "Response",
+        "description": "Response format for the completion endpoint."
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
