@@ -1,6 +1,6 @@
 
 import type { Message } from 'discord.js';
-import type { MessageSender } from './interfaces.js';
+import type { MessageSender, MessageReplier } from './interfaces.js';
 
 /**
  * Splits a message into chunks if it exceeds Discord's character limit
@@ -68,11 +68,75 @@ export function chunkMessage(text: string, maxLength: number = 2000): string[] {
 }
 
 /**
+ * Replies to a message with any Discord entity that has a .reply method
+ * Automatically chunks the message if it's too long
+ * @param replier - Any Discord entity with a .reply method (message, interaction, etc.)
+ * @param text - The reply text to send
+ * @param maxLength - Maximum length per message chunk (default: 1800)
+ * @returns Promise resolving to array of sent reply messages
+ */
+export async function replyMessage(
+  replier: MessageReplier,
+  text: string,
+  maxLength: number = 1800
+): Promise<Message[]> {
+  const chunks = chunkMessage(text, maxLength);
+  const sentMessages: Message[] = [];
+
+  for (const chunk of chunks) {
+    try {
+      const message = await replier.reply(chunk);
+      sentMessages.push(message);
+    } catch (error) {
+      console.error('Failed to reply with message chunk:', error);
+      throw error;
+    }
+  }
+
+  return sentMessages;
+}
+
+/**
+ * Replies with multiple messages in sequence with optional delay
+ * @param replier - Any Discord entity with a .reply method
+ * @param messages - Array of message texts to reply with
+ * @param delayMs - Optional delay between messages in milliseconds
+ * @returns Promise resolving to array of sent reply messages
+ */
+export async function replyMessages(
+  replier: MessageReplier,
+  messages: string[],
+  delayMs: number = 0
+): Promise<Message[]> {
+  const sentMessages: Message[] = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    if (!message) continue;
+
+    try {
+      const sent = await replyMessage(replier, message);
+      sentMessages.push(...sent);
+
+      // Add delay between messages if specified (except for the last message)
+      if (delayMs > 0 && i < messages.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    } catch (error) {
+      console.error(`Failed to reply with message ${i + 1}:`, error);
+      throw error;
+    }
+  }
+
+  return sentMessages;
+}
+
+/**
  * Sends a message to any Discord entity that has a .send method
  * Automatically chunks the message if it's too long
  * @param sender - Any Discord entity with a .send method (channel, user, etc.)
  * @param text - The message text to send
- * @param maxLength - Maximum length per message chunk (default: 2000)
+ * @param maxLength - Maximum length per message chunk (default: 1800)
  * @returns Promise resolving to array of sent messages
  */
 export async function sendMessage(

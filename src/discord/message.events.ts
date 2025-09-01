@@ -10,7 +10,7 @@ import {
   DigitalOceanAIClient,
   DOAIConfig,
 } from '../agents/llm-clients/digital-ocean.client.js';
-import { sendMessage } from './helpers.js';
+import { replyMessage, sendMessage } from './helpers.js';
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.
@@ -101,9 +101,9 @@ export async function MessageCreate(
 
     // Await the reply system to handle any permission errors
     if (hasMention) {
-      await message.reply(response.content);
+      await replyMessage(message, response.content);
     } else {
-      await message.channel.send(response.content);
+      await sendMessage(message.channel, response.content);
     }
 
     logger.debug('Successfully sent reply');

@@ -15,3 +15,11 @@ export type DiscordConfig = z.infer<typeof DiscordConfigSchema>;
 export interface MessageSender {
   send(options: string | MessagePayload | MessageCreateOptions): Promise<Message>;
 }
+
+/**
+ * Type representing any Discord entity that can reply to messages.
+ * This includes messages and other entities with a .reply method.
+ */
+export interface MessageReplier {
+  reply(options: string | MessagePayload | MessageCreateOptions): Promise<Message>;
+}

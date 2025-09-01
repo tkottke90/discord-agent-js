@@ -1,5 +1,5 @@
-import { chunkMessage, sendMessage, sendMessages } from './helpers.js';
-import type { MessageSender } from './interfaces.js';
+import { chunkMessage, sendMessage, sendMessages, replyMessage, replyMessages } from './helpers.js';
+import type { MessageSender, MessageReplier } from './interfaces.js';
 import type { Message } from 'discord.js';
 
 // Mock MessageSender for testing
@@ -8,6 +8,16 @@ class MockMessageSender implements MessageSender {
 
   async send(options: string): Promise<Message> {
     this.sentMessages.push(options);
+    return {} as Message; // Mock message object
+  }
+}
+
+// Mock MessageReplier for testing
+class MockMessageReplier implements MessageReplier {
+  public repliedMessages: string[] = [];
+
+  async reply(options: string): Promise<Message> {
+    this.repliedMessages.push(options);
     return {} as Message; // Mock message object
   }
 }
@@ -84,7 +94,49 @@ describe('Discord Helpers', () => {
     });
   });
 
-  describe('MessageSender type compatibility', () => {
+  describe('replyMessage', () => {
+    it('should reply with a single message for short text', async () => {
+      const mockReplier = new MockMessageReplier();
+      const text = 'Hello, world!';
+
+      await replyMessage(mockReplier, text);
+
+      expect(mockReplier.repliedMessages).toEqual([text]);
+    });
+
+    it('should reply with multiple messages for long text', async () => {
+      const mockReplier = new MockMessageReplier();
+      const text = 'A'.repeat(3000);
+
+      await replyMessage(mockReplier, text, 1800);
+
+      expect(mockReplier.repliedMessages).toHaveLength(2);
+      expect(mockReplier.repliedMessages[0]).toHaveLength(1800);
+      expect(mockReplier.repliedMessages[1]).toHaveLength(1200);
+    });
+  });
+
+  describe('replyMessages', () => {
+    it('should reply with multiple messages in sequence', async () => {
+      const mockReplier = new MockMessageReplier();
+      const messages = ['Reply 1', 'Reply 2', 'Reply 3'];
+
+      await replyMessages(mockReplier, messages);
+
+      expect(mockReplier.repliedMessages).toEqual(messages);
+    });
+
+    it('should skip empty messages', async () => {
+      const mockReplier = new MockMessageReplier();
+      const messages = ['Reply 1', '', 'Reply 3'];
+
+      await replyMessages(mockReplier, messages);
+
+      expect(mockReplier.repliedMessages).toEqual(['Reply 1', 'Reply 3']);
+    });
+  });
+
+  describe('Type compatibility', () => {
     it('should work with any object that has a send method', async () => {
       // This test verifies that our MessageSender type is flexible
       const customSender = {
@@ -96,6 +148,19 @@ describe('Discord Helpers', () => {
 
       // This should compile without errors, proving type compatibility
       await sendMessage(customSender, 'Test message');
+    });
+
+    it('should work with any object that has a reply method', async () => {
+      // This test verifies that our MessageReplier type is flexible
+      const customReplier = {
+        async reply(text: string): Promise<Message> {
+          console.log(`Replying: ${text}`);
+          return {} as Message;
+        }
+      };
+
+      // This should compile without errors, proving type compatibility
+      await replyMessage(customReplier, 'Test reply');
     });
   });
 });
