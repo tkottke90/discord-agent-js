@@ -51,6 +51,19 @@ export interface StandardGenerateResponse extends StandardUsage {
   finish_reason?: string;
 }
 
+export interface StandardEmbedRequest {
+  // Core required field
+  input: string | string[];
+
+  // Optional fields
+  truncate?: boolean;     // Whether to truncate input to fit context
+}
+
+export interface StandardEmbedResponse extends StandardUsage {
+  // Core response - array of embedding vectors
+  embeddings: number[][];
+}
+
 export const LLMClientConfigSchema = z.object({
   engine: z.string().min(1),
   baseUrl: z.string().min(1),
@@ -83,10 +96,17 @@ export abstract class LLMClient<
   abstract chat(request: ChatRequest): Promise<ChatResponse>;
 
   /**
-   * Generate an embedding from a text input.
-   * @param request 
+   * Generate embeddings from text input(s).
+   * Override this method in engines that support embeddings.
+   * @param request - The embedding request
+   * @throws Error if not implemented by the engine
    */
-  abstract embed(request: unknown): Promise<unknown>;
+  embed(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _request: StandardEmbedRequest
+  ): Promise<StandardEmbedResponse> {
+    throw new Error(`Embedding not supported by ${this.constructor.name}`);
+  }
 
   /**
    * Generate a completion for a given prompt.
