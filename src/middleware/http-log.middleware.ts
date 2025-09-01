@@ -6,7 +6,7 @@ import crypto from 'crypto';
 export function HttpEventMiddleware(
   req: express.Request,
   res: express.Response,
-  next: express.NextFunction
+  next: express.NextFunction,
 ) {
   const traceId = crypto.randomUUID();
   const start = process.hrtime();
@@ -24,8 +24,8 @@ export function HttpEventMiddleware(
         method: req.method,
         url: req.url,
         timingMS: duration,
-        status: res.statusCode
-      }
+        status: res.statusCode,
+      },
     );
   });
 

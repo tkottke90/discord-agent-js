@@ -27,6 +27,7 @@
     "exactOptionalPropertyTypes": true,
 
     // Style Options
+    "removeComments": true,
     // "noImplicitReturns": true,
     // "noImplicitOverride": true,
     // "noUnusedLocals": true,

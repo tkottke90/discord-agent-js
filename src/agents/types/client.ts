@@ -8,7 +8,7 @@ export interface StandardUsage {
     prompt_tokens?: number;
     completion_tokens?: number;
     total_tokens?: number;
-  }
+  };
 }
 
 export interface StandardMessage {
@@ -34,16 +34,16 @@ export interface StandardChatResponse extends StandardUsage {
 export interface StandardGenerateRequest {
   // Core required field
   prompt: string;
-  
+
   // Common optional fields (same as chat)
   stream?: boolean;
   temperature?: number;
   top_p?: number;
   max_tokens?: number;
-  
+
   // Generate-specific optional fields
-  system?: string;        // System prompt/instructions
-  suffix?: string;        // Text after response (for code completion)
+  system?: string; // System prompt/instructions
+  suffix?: string; // Text after response (for code completion)
 }
 
 export interface StandardGenerateResponse extends StandardUsage {
@@ -57,7 +57,7 @@ export interface StandardEmbedRequest {
   input: string | string[];
 
   // Optional fields
-  truncate?: boolean;     // Whether to truncate input to fit context
+  truncate?: boolean; // Whether to truncate input to fit context
 }
 
 export interface StandardEmbedResponse extends StandardUsage {
@@ -70,20 +70,21 @@ export const LLMClientConfigSchema = z.object({
   baseUrl: z.string().min(1),
   timeout: z.number().positive().int().default(30000),
   headers: z.record(z.string(), z.string()).optional(),
-  auth: z.object({
-    // Adds an HTTP Basic Auth
-    basic: z.string().min(1).optional(),
-    
-    // Adds an HTTP Bearer Token
-    bearer: z.string().min(1).optional(),
-  }).optional()
-});
+  auth: z
+    .object({
+      // Adds an HTTP Basic Auth
+      basic: z.string().min(1).optional(),
 
+      // Adds an HTTP Bearer Token
+      bearer: z.string().min(1).optional(),
+    })
+    .optional(),
+});
 
 export abstract class LLMClient<
   Config extends z.infer<typeof LLMClientConfigSchema>,
   ChatRequest extends StandardChatRequest,
-  ChatResponse extends StandardChatResponse
+  ChatResponse extends StandardChatResponse,
 > {
   protected readonly config: Config;
 
@@ -91,11 +92,13 @@ export abstract class LLMClient<
     protected readonly logger: Logger,
     configSchema: z.ZodSchema<Config>,
     config: Config,
-  ){
+  ) {
     const parsedConfig = configSchema.safeParse(config);
-    
+
     if (!parsedConfig.success) {
-      this.logger.error(`Errors in config: ${prettyZodErrors(parsedConfig.error)}}`);
+      this.logger.error(
+        `Errors in config: ${prettyZodErrors(parsedConfig.error)}}`,
+      );
       throw new Error('FATAL: Invalid LLM Client config provided');
     }
 
@@ -104,7 +107,7 @@ export abstract class LLMClient<
 
   /**
    * Generate a chat response based on the conversation history
-   * @param request 
+   * @param request
    */
   abstract chat(request: ChatRequest): Promise<ChatResponse>;
 
@@ -116,24 +119,26 @@ export abstract class LLMClient<
    */
   embed(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _request: StandardEmbedRequest
+    _request: StandardEmbedRequest,
   ): Promise<StandardEmbedResponse> {
     throw new Error(`Embedding not supported by ${this.constructor.name}`);
   }
 
   /**
    * Generate a completion for a given prompt.
-   * @param request 
+   * @param request
    */
-  abstract generate(request: StandardGenerateRequest): Promise<StandardGenerateResponse>;
+  abstract generate(
+    request: StandardGenerateRequest,
+  ): Promise<StandardGenerateResponse>;
 
   /**
    * Engines use a set of parameters including temperature, top_k, top_p
    * to control the behavior of the LLM model.  These numbers are typically
    * between 0 and 1 and this function helps us normalize them before sending
    * them to the engine.
-   * @param param 
-   * @returns 
+   * @param param
+   * @returns
    */
   normalizeNumericParameters(param: number) {
     return Math.min(Math.max(param, 0), 1);

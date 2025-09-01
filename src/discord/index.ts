@@ -14,8 +14,8 @@ const intents = [
   GatewayIntentBits.GuildMessages,
   GatewayIntentBits.GuildMessageTyping,
   GatewayIntentBits.GuildMembers,
-  GatewayIntentBits.MessageContent
-]
+  GatewayIntentBits.MessageContent,
+];
 
 function registerEvents(client: Client, logger: Logger) {
   // When the client is ready, run this code (only once).
@@ -40,10 +40,16 @@ export default function initialize() {
 
   const config = ConfigurationFile.get('discord');
 
-  const { data: parsedConfig, success, error } = DiscordConfigSchema.safeParse(config);
+  const {
+    data: parsedConfig,
+    success,
+    error,
+  } = DiscordConfigSchema.safeParse(config);
 
   if (!success) {
-    logger.error(`Invalid Discord config provided - Please correct the errors in your config file (${ConfigurationFile.util.getEnv('NODE_CONFIG_DIR')})`);
+    logger.error(
+      `Invalid Discord config provided - Please correct the errors in your config file (${ConfigurationFile.util.getEnv('NODE_CONFIG_DIR')})`,
+    );
     logger.error(prettyZodErrors(error));
     return process.exit();
   }

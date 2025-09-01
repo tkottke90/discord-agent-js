@@ -1,6 +1,14 @@
 // Ollama API TypeScript Definitions
 // Based on official Ollama API documentation
-import type { JSONSchema, Tool, ToolCall, ToolFunction, Message, MessageRole, ChatRequest } from './chat.js';
+import type {
+  JSONSchema,
+  Tool,
+  ToolCall,
+  ToolFunction,
+  Message,
+  MessageRole,
+  ChatRequest,
+} from './chat.js';
 
 // Common types
 export interface ModelOptions {
@@ -255,23 +263,33 @@ export interface OllamaError {
 export interface OllamaClient {
   // Generate completion
   generate(request: GenerateRequest): Promise<GenerateResponse>;
-  generateStream(request: GenerateRequest & { stream: true }): StreamingResponse<GenerateResponse>;
+  generateStream(
+    request: GenerateRequest & { stream: true },
+  ): StreamingResponse<GenerateResponse>;
 
   // Chat completion
   chat(request: ChatRequest): Promise<ChatResponse>;
-  chatStream(request: ChatRequest & { stream: true }): StreamingResponse<ChatResponse>;
+  chatStream(
+    request: ChatRequest & { stream: true },
+  ): StreamingResponse<ChatResponse>;
 
   // Model management
   create(request: CreateModelRequest): Promise<CreateModelResponse>;
-  createStream(request: CreateModelRequest & { stream: true }): StreamingResponse<CreateModelResponse>;
+  createStream(
+    request: CreateModelRequest & { stream: true },
+  ): StreamingResponse<CreateModelResponse>;
   list(): Promise<ListModelsResponse>;
   show(request: ShowModelRequest): Promise<ShowModelResponse>;
   copy(request: CopyModelRequest): Promise<void>;
   delete(request: DeleteModelRequest): Promise<void>;
   pull(request: PullModelRequest): Promise<PullModelResponse>;
-  pullStream(request: PullModelRequest & { stream: true }): StreamingResponse<PullModelResponse>;
+  pullStream(
+    request: PullModelRequest & { stream: true },
+  ): StreamingResponse<PullModelResponse>;
   push(request: PushModelRequest): Promise<PushModelResponse>;
-  pushStream(request: PushModelRequest & { stream: true }): StreamingResponse<PushModelResponse>;
+  pushStream(
+    request: PushModelRequest & { stream: true },
+  ): StreamingResponse<PushModelResponse>;
 
   // Embeddings
   embed(request: EmbedRequest): Promise<EmbedResponse>;
@@ -289,8 +307,12 @@ export interface OllamaClient {
 }
 
 // Utility types for type guards
-export type GenerateStreamResponse = GenerateResponse & { done: false } | GenerateResponse & { done: true };
-export type ChatStreamResponse = ChatResponse & { done: false } | ChatResponse & { done: true };
+export type GenerateStreamResponse =
+  | (GenerateResponse & { done: false })
+  | (GenerateResponse & { done: true });
+export type ChatStreamResponse =
+  | (ChatResponse & { done: false })
+  | (ChatResponse & { done: true });
 
 // Re-export commonly used types
 export type {
@@ -307,5 +329,5 @@ export type {
   ToolFunction,
   Message,
   MessageRole,
-  Model
+  Model,
 };

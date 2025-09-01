@@ -1,10 +1,15 @@
-import type { Message, OmitPartialGroupDMChannel, PartialMessage } from "discord.js";
-import { Logger } from "../utils/logging.js";
+import type {
+  Message,
+  OmitPartialGroupDMChannel,
+  PartialMessage,
+} from 'discord.js';
+import { Logger } from '../utils/logging.js';
 // import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client.js';
 import ConfigurationFile from 'config';
-import { DigitalOceanAIClient, DOAIConfig } from "../agents/llm-clients/digital-ocean.client.js";
-import { NonStreamChoice } from "../agents/types/digital-ocean-ai.js";
-import { getPool } from '../agents/index.js';
+import {
+  DigitalOceanAIClient,
+  DOAIConfig,
+} from '../agents/llm-clients/digital-ocean.client.js';
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.
@@ -43,13 +48,13 @@ into your persona as well.  DO NOT INCLUDE ANY MENTION OF THE PARAMETERS IN YOUR
 
 `;
 
-
-
-export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<boolean>>) {
+export async function MessageCreate(
+  message: OmitPartialGroupDMChannel<Message<boolean>>,
+) {
   const logger = new Logger('Discord.MessageCreate');
 
   if (message.author.bot) {
-    logger.debug('Message Created By Bot, Ignored....')
+    logger.debug('Message Created By Bot, Ignored....');
     return;
   }
 
@@ -57,7 +62,7 @@ export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<b
     const guild = message.guild?.name;
     const channel = message.channelId;
 
-    logger.debug(`Voice channel [  ${guild} ] - [ ${channel} ], ignored...`)
+    logger.debug(`Voice channel [  ${guild} ] - [ ${channel} ], ignored...`);
     return;
   }
 
@@ -65,8 +70,16 @@ export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<b
 
   try {
     // Check if bot has necessary permissions
-    if (message.guild && !message.guild.members.me?.permissions.has(['ReadMessageHistory', 'SendMessages'])) {
-      logger.error('Bot missing required permissions: ReadMessageHistory, SendMessages');
+    if (
+      message.guild &&
+      !message.guild.members.me?.permissions.has([
+        'ReadMessageHistory',
+        'SendMessages',
+      ])
+    ) {
+      logger.error(
+        'Bot missing required permissions: ReadMessageHistory, SendMessages',
+      );
       return;
     }
 
@@ -81,8 +94,8 @@ export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<b
     const response = await doai.chat({
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: message.content }
-      ]
+        { role: 'user', content: message.content },
+      ],
     });
 
     // Await the reply system to handle any permission errors
@@ -93,27 +106,32 @@ export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<b
     }
 
     logger.debug('Successfully sent reply');
-
   } catch (error) {
     logger.error('Error processing message:', (error as Error).message);
 
     // Try to send a simple error message if possible
     try {
       // await message.channel.send('Sorry, I encountered an error processing your message.');
-       await message.reply('Sorry, I encountered an error processing your message.');
+      await message.reply(
+        'Sorry, I encountered an error processing your message.',
+      );
     } catch (replyError) {
       logger.error('Failed to send error reply:', replyError);
     }
   }
 }
 
-export function MessageUpdate(message: OmitPartialGroupDMChannel<Message<boolean> | PartialMessage>) {
+export function MessageUpdate(
+  message: OmitPartialGroupDMChannel<Message<boolean> | PartialMessage>,
+) {
   const logger = new Logger('Discord.MessageUpdate');
 
   if (message.author?.bot) {
-    logger.debug('Message Updated By Bot, Ignored....')
+    logger.debug('Message Updated By Bot, Ignored....');
     return;
   }
 
-  logger.info(`Message from ${message.author?.username ?? 'Unknown'}: ${message.content}`);
+  logger.info(
+    `Message from ${message.author?.username ?? 'Unknown'}: ${message.content}`,
+  );
 }

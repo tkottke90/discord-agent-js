@@ -1,7 +1,7 @@
 // Digital Ocean AI Agent API TypeScript Definitions
 // Generated from OpenAPI specification: https://udubprby3wudv76jcukm3geo.agents.do-ai.run/openapi.json
 
-import { Nullable } from "../../types/utility.ts";
+import { Nullable } from '../../types/utility.ts';
 
 // Base types
 export interface Message {
@@ -149,7 +149,9 @@ export interface ChatCompletionRequest {
 }
 
 // Response types
-export interface ChatCompletionResponse<Choices extends StreamChoice[] | NonStreamChoice[]> {
+export interface ChatCompletionResponse<
+  Choices extends StreamChoice[] | NonStreamChoice[],
+> {
   /** Unique identifier for the completion */
   id: string;
   /** Object type (e.g., "chat.completion") */
@@ -196,8 +198,9 @@ export interface DOAIClient {
    * @param request - The chat completion request configuration
    * @returns Promise resolving to the completion response
    */
-  chatCompletions(request: ChatCompletionRequest): Promise<ChatCompletionResponse>;
-
+  chatCompletions(
+    request: ChatCompletionRequest,
+  ): Promise<ChatCompletionResponse>;
 
   /**
    * Check the health status of the API.
@@ -214,8 +217,12 @@ export interface DOAIConfig extends LLMClientConfig {
 }
 
 // Utility types for type guards
-export type StreamingChatResponse = ChatCompletionResponse & { choices: StreamChoice[] };
-export type NonStreamingChatResponse = ChatCompletionResponse & { choices: NonStreamChoice[] };
+export type StreamingChatResponse = ChatCompletionResponse & {
+  choices: StreamChoice[];
+};
+export type NonStreamingChatResponse = ChatCompletionResponse & {
+  choices: NonStreamChoice[];
+};
 
 // Re-export commonly used types
 export type {
@@ -226,5 +233,5 @@ export type {
   UsageMeta,
   GuardrailsMeta,
   FunctionsMeta,
-  RetrievalMeta
+  RetrievalMeta,
 };

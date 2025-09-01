@@ -4,22 +4,24 @@ import { STATE, WorkerResponse } from './types/worker.js';
 import { Logger } from '../utils/logging.js';
 
 type Job = {
-  jobId: string,
-  data: unknown,
-  priority: number,
-  createdAt: number
-}
+  jobId: string;
+  data: unknown;
+  priority: number;
+  createdAt: number;
+};
 
-type CreateJob = Omit<Job, 'jobId' | 'createdAt' | 'priority'> & { priority?: number };
+type CreateJob = Omit<Job, 'jobId' | 'createdAt' | 'priority'> & {
+  priority?: number;
+};
 
 export class WorkerPool {
   private workers: Map<string, Worker>;
   private workerStatus = new Map<string, STATE>();
-  
+
   private jobQueue: Job[] = [];
 
   private logger = new Logger('WorkerPool');
-  
+
   constructor() {
     this.workers = new Map();
   }
@@ -31,7 +33,9 @@ export class WorkerPool {
     // Listen for status updates
     worker.on('message', (message: WorkerResponse) => {
       if (message.action === 'response:status') {
-        this.logger.debug(`Worker Status Received ${workerId} - ${STATE[message.state]}`);
+        this.logger.debug(
+          `Worker Status Received ${workerId} - ${STATE[message.state]}`,
+        );
         this.workerStatus.set(workerId, message.state);
       }
     });
@@ -44,7 +48,7 @@ export class WorkerPool {
       ...job,
       jobId: crypto.randomUUID(),
       priority: job.priority ?? 0,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     });
 
     // Sort by Priority then by createdAt
@@ -77,7 +81,7 @@ export class WorkerPool {
   }
 
   public async getWorkerStatus(workerId: string) {
-    if (this.hasWorker(workerId)) { 
+    if (this.hasWorker(workerId)) {
       return this.workerStatus.get(workerId);
     }
   }

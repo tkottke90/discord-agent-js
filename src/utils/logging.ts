@@ -1,12 +1,8 @@
-import { Console } from "node:console";
+import { Console } from 'node:console';
 
 export class Logger extends Console {
   constructor(private name: string = '') {
-    super(
-      process.stdout,
-      process.stderr,
-      false
-    );
+    super(process.stdout, process.stderr, false);
   }
 
   info(message?: unknown, ...optionalParams: unknown[]) {
@@ -35,13 +31,16 @@ export class Logger extends Console {
     ...optionalParams: unknown[]
   ) {
     const logWithLabel = this.addTag(this.name, message);
-    const logWithLevel = this.addTag(`${method.toUpperCase()}     `.slice(0, 5), logWithLabel);
-    const logWithTimestamp = this.addTag(new Date().toISOString(), logWithLevel);
-
-    super[method](
-      logWithTimestamp, 
-      ...optionalParams
+    const logWithLevel = this.addTag(
+      `${method.toUpperCase()}     `.slice(0, 5),
+      logWithLabel,
     );
+    const logWithTimestamp = this.addTag(
+      new Date().toISOString(),
+      logWithLevel,
+    );
+
+    super[method](logWithTimestamp, ...optionalParams);
   }
 
   private addTag(name: string, message: unknown) {

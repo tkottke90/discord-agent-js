@@ -7,14 +7,14 @@ import {
   StandardChatResponse,
   StandardGenerateRequest,
   StandardGenerateResponse,
-  StandardMessage
+  StandardMessage,
 } from '../types/client.js';
 import * as DOAITypes from '../types/digital-ocean-ai.js';
 
 export const DOAIConfigSchema = LLMClientConfigSchema.extend({
   auth: z.object({
-    bearer: z.string().min(1, 'Bearer token is required')
-  })
+    bearer: z.string().min(1, 'Bearer token is required'),
+  }),
 });
 
 export type DOAIConfig = z.infer<typeof DOAIConfigSchema>;
@@ -24,7 +24,11 @@ export type DOAIConfig = z.infer<typeof DOAIConfigSchema>;
  * Implements the complete Digital Ocean AI Agent API with support for chat completions,
  * streaming responses, knowledge base retrieval, function calling, and guardrails.
  */
-export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequest, StandardChatResponse> {
+export class DigitalOceanAIClient extends LLMClient<
+  DOAIConfig,
+  StandardChatRequest,
+  StandardChatResponse
+> {
   private readonly baseUrl: string;
   private readonly timeout: number;
   private readonly headers: Record<string, string>;
@@ -36,11 +40,13 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
     this.timeout = this.config.timeout;
     this.headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.config.auth.bearer}`,
-      ...this.config.headers
+      Authorization: `Bearer ${this.config.auth.bearer}`,
+      ...this.config.headers,
     };
 
-    this.logger.debug(`Initialized (baseUrl=${this.baseUrl}, timeout=${this.timeout})`);
+    this.logger.debug(
+      `Initialized (baseUrl=${this.baseUrl}, timeout=${this.timeout})`,
+    );
   }
 
   /**
@@ -53,15 +59,19 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
       ...options,
       headers: {
         ...this.headers,
-        ...options.headers
+        ...options.headers,
       },
-      signal: AbortSignal.timeout(this.timeout)
+      signal: AbortSignal.timeout(this.timeout),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      this.logger.error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-      throw new Error(`Digital Ocean AI API error: ${response.status} ${response.statusText}`);
+      this.logger.error(
+        `API request failed: ${response.status} ${response.statusText} - ${errorText}`,
+      );
+      throw new Error(
+        `Digital Ocean AI API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -70,10 +80,12 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
   /**
    * Convert StandardChatRequest to Digital Ocean AI format
    */
-  private convertChatRequest(request: StandardChatRequest): DOAITypes.ChatCompletionRequest {
+  private convertChatRequest(
+    request: StandardChatRequest,
+  ): DOAITypes.ChatCompletionRequest {
     const messages: DOAITypes.Message[] = request.messages.map(msg => ({
       role: msg.role,
-      content: msg.content
+      content: msg.content,
     }));
 
     return {
@@ -81,14 +93,16 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
       temperature: request.temperature ?? undefined,
       top_p: request.top_p ?? undefined,
       max_tokens: request.max_tokens ?? undefined,
-      stream: false // We'll handle streaming separately
+      stream: false, // We'll handle streaming separately
     };
   }
 
   /**
    * Convert Digital Ocean AI response to StandardChatResponse
    */
-  private convertChatResponse(response: DOAITypes.ChatCompletionResponse<DOAITypes.NonStreamChoice[]>): StandardChatResponse {
+  private convertChatResponse(
+    response: DOAITypes.ChatCompletionResponse<DOAITypes.NonStreamChoice[]>,
+  ): StandardChatResponse {
     const choice = response.choices[0];
     if (!choice) {
       throw new Error('No choices returned from Digital Ocean AI API');
@@ -97,15 +111,17 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
     return {
       content: choice.message.content,
       finish_reason: 'stop', // NonStreamChoice doesn't have finish_reason, assume 'stop'
-      usage: response.usage ? {
-        prompt_tokens: response.usage.prompt_tokens,
-        completion_tokens: response.usage.completion_tokens,
-        total_tokens: response.usage.total_tokens
-      } : {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0
-      }
+      usage: response.usage
+        ? {
+            prompt_tokens: response.usage.prompt_tokens,
+            completion_tokens: response.usage.completion_tokens,
+            total_tokens: response.usage.total_tokens,
+          }
+        : {
+            prompt_tokens: 0,
+            completion_tokens: 0,
+            total_tokens: 0,
+          },
     };
   }
 
@@ -116,13 +132,12 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
     this.logger.debug('Making chat request');
 
     const doaiRequest = this.convertChatRequest(request);
-    const response = await this.request<DOAITypes.ChatCompletionResponse<DOAITypes.NonStreamChoice[]>>(
-      '/api/v1/chat/completions',
-      {
-        method: 'POST',
-        body: JSON.stringify(doaiRequest)
-      }
-    );
+    const response = await this.request<
+      DOAITypes.ChatCompletionResponse<DOAITypes.NonStreamChoice[]>
+    >('/api/v1/chat/completions', {
+      method: 'POST',
+      body: JSON.stringify(doaiRequest),
+    });
 
     return this.convertChatResponse(response);
   }
@@ -130,7 +145,9 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
   /**
    * Generate a completion for a given prompt by converting it to a chat request
    */
-  async generate(request: StandardGenerateRequest): Promise<StandardGenerateResponse> {
+  async generate(
+    request: StandardGenerateRequest,
+  ): Promise<StandardGenerateResponse> {
     this.logger.debug('Making generate request (converted to chat)');
 
     // Convert generate request to chat format
@@ -144,9 +161,13 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
 
     const chatRequest: StandardChatRequest = {
       messages,
-      ...(request.temperature !== undefined && { temperature: request.temperature }),
+      ...(request.temperature !== undefined && {
+        temperature: request.temperature,
+      }),
       ...(request.top_p !== undefined && { top_p: request.top_p }),
-      ...(request.max_tokens !== undefined && { max_tokens: request.max_tokens })
+      ...(request.max_tokens !== undefined && {
+        max_tokens: request.max_tokens,
+      }),
     };
 
     const chatResponse = await this.chat(chatRequest);
@@ -154,7 +175,7 @@ export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequ
     return {
       content: chatResponse.content,
       finish_reason: chatResponse.finish_reason || 'stop',
-      usage: chatResponse.usage
+      usage: chatResponse.usage,
     };
   }
 }
