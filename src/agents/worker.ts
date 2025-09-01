@@ -1,10 +1,6 @@
 import { parentPort, threadId } from 'node:worker_threads';
 import { Logger } from '../utils/logging.js';
-import {
-  STATE,
-  WorkerRequest,
-  WorkerResponse
-} from './types/worker.js';
+import { STATE, WorkerRequest, WorkerResponse } from './types/worker.js';
 
 async function messageReducer(message: WorkerRequest): Promise<WorkerResponse> {
   switch (message.action) {

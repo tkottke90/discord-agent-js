@@ -8,7 +8,7 @@ import {
   StandardGenerateRequest,
   StandardGenerateResponse,
   StandardEmbedRequest,
-  StandardEmbedResponse
+  StandardEmbedResponse,
 } from '../types/client.js';
 import * as OllamaTypes from '../types/ollama.js';
 
