@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { Logger } from '../../utils/logging.js';
 import { JSONSchema, ToolCall } from './chat.js';
+import { prettyZodErrors } from '../../utils/zod-errors.js';
 
 export interface StandardUsage {
   usage: {
@@ -84,10 +85,22 @@ export abstract class LLMClient<
   ChatRequest extends StandardChatRequest,
   ChatResponse extends StandardChatResponse
 > {
+  protected readonly config: Config;
+
   constructor(
-    protected readonly config: Config,
-    protected readonly logger: Logger
-  ){}
+    protected readonly logger: Logger,
+    configSchema: z.ZodSchema<Config>,
+    config: Config,
+  ){
+    const parsedConfig = configSchema.safeParse(config);
+    
+    if (!parsedConfig.success) {
+      this.logger.error(`Errors in config: ${prettyZodErrors(parsedConfig.error)}}`);
+      throw new Error('FATAL: Invalid LLM Client config provided');
+    }
+
+    this.config = parsedConfig.data;
+  }
 
   /**
    * Generate a chat response based on the conversation history

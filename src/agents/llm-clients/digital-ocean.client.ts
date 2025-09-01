@@ -1,8 +1,15 @@
 import z from 'zod';
 import { Logger } from '../../utils/logging.js';
-import { LLMClientConfigSchema } from '../types/client.js';
+import {
+  LLMClient,
+  LLMClientConfigSchema,
+  StandardChatRequest,
+  StandardChatResponse,
+  StandardGenerateRequest,
+  StandardGenerateResponse,
+  StandardMessage
+} from '../types/client.js';
 import * as DOAITypes from '../types/digital-ocean-ai.js';
-import { prettyZodErrors } from '../../utils/zod-errors.js';
 
 export const DOAIConfigSchema = LLMClientConfigSchema.extend({
   auth: z.object({
@@ -17,174 +24,137 @@ export type DOAIConfig = z.infer<typeof DOAIConfigSchema>;
  * Implements the complete Digital Ocean AI Agent API with support for chat completions,
  * streaming responses, knowledge base retrieval, function calling, and guardrails.
  */
-export class DigitalOceanAIClient implements DOAITypes.DOAIClient {
+export class DigitalOceanAIClient extends LLMClient<DOAIConfig, StandardChatRequest, StandardChatResponse> {
   private readonly baseUrl: string;
   private readonly timeout: number;
   private readonly headers: Record<string, string>;
-  private readonly logger: Logger;
 
   constructor(config: DOAIConfig) {
-    this.logger = new Logger('DigitalOceanAIClient');
+    super(new Logger('DigitalOceanAIClient'), DOAIConfigSchema, config);
 
-    const parsedConfig = DOAIConfigSchema.safeParse(config);
-
-    if (!parsedConfig.success) {
-      this.logger.error(`Errors in Digital Ocean AI config: ${prettyZodErrors(parsedConfig.error)}}`);
-      throw new Error('FATAL: Invalid Digital Ocean AI config provided');
-    }
-
-    const {
-      baseUrl,
-      timeout,
-      headers,
-      auth
-    } = parsedConfig.data;
-
-    this.baseUrl = baseUrl;
-    this.timeout = timeout;
+    this.baseUrl = this.config.baseUrl;
+    this.timeout = this.config.timeout;
     this.headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${auth.bearer}`,
-      ...headers
+      'Authorization': `Bearer ${this.config.auth.bearer}`,
+      ...this.config.headers
     };
 
     this.logger.debug(`Initialized (baseUrl=${this.baseUrl}, timeout=${this.timeout})`);
   }
 
   /**
-   * Make HTTP request to Digital Ocean AI API
+   * Make an HTTP request to the Digital Ocean AI API
    */
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          ...this.headers,
-          ...options.headers
-        },
-        signal: controller.signal
-      });
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...this.headers,
+        ...options.headers
+      },
+      signal: AbortSignal.timeout(this.timeout)
+    });
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errorBody = await response.json() as DOAITypes.DOAIError;
-          errorMessage = errorBody.error || errorMessage;
-        } catch {
-          // Ignore JSON parsing errors for error responses
-        }
-        throw new Error(errorMessage);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`Request timeout after ${this.timeout}ms`);
-      }
-      throw error;
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(`Digital Ocean AI API error: ${response.status} ${response.statusText}`);
     }
+
+    return await response.json();
   }
 
   /**
-   * Generate AI response based on query, conversation history, and additional factors.
-   *
-   * This endpoint generates responses using routing, function-calling, and document retrieval
-   * capabilities. It supports knowledge base filtering, guardrails, and various retrieval methods.
-   *
-   * @param request - The chat completion request configuration
-   * @param request.messages - (required) List of messages representing the conversation history
-   * @param request.temperature - Sampling temperature (0-2). Higher values make output more random
-   * @param request.top_p - Nucleus sampling threshold for token selection
-   * @param request.max_tokens - Maximum tokens to generate in the completion
-   * @param request.stream - If true, streams the response; otherwise returns single JSON object
-   * @param request.k - Top results to return from knowledge bases
-   * @param request.retrieval_method - Strategy for retrieval-augmented generation
-   * @param request.kb_filters - Filters to apply to the knowledge base
-   * @param request.instruction_override - Override the default agent instruction
-   * @param request.include_functions_info - Include metadata about called functions
-   * @param request.include_retrieval_info - Include metadata about retrieved documents
-   * @param request.include_guardrails_info - Include metadata about triggered guardrails
-   * @param request.provide_citations - Include citations within the response
-   *
-   * @returns Promise resolving to the completion response
-   *
-   * @example Basic chat
-   * ```typescript
-   * const response = await client.chatCompletions({
-   *   messages: [
-   *     { role: 'user', content: 'What is artificial intelligence?' }
-   *   ]
-   * });
-   * console.log(response.choices[0].message.content);
-   * ```
-   *
-   * @example With knowledge base filtering
-   * ```typescript
-   * const response = await client.chatCompletions({
-   *   messages: [
-   *     { role: 'user', content: 'Tell me about our company policies' }
-   *   ],
-   *   kb_filters: [
-   *     { index: '0000000-0000-0000-0000-000000000000', path: 'policies/' }
-   *   ],
-   *   k: 5,
-   *   retrieval_method: 'rewrite'
-   * });
-   * ```
-   *
-   * @example With function calling and guardrails
-   * ```typescript
-   * const response = await client.chatCompletions({
-   *   messages: [
-   *     { role: 'user', content: 'What is the weather like today?' }
-   *   ],
-   *   include_functions_info: true,
-   *   include_guardrails_info: true,
-   *   provide_citations: true
-   * });
-   * ```
+   * Convert StandardChatRequest to Digital Ocean AI format
    */
-  async chatCompletions<Choices extends DOAITypes.StreamChoice[] | DOAITypes.NonStreamChoice[]>(request: DOAITypes.ChatCompletionRequest) {
-    const requestBody = { ...request, stream: false };
-    return this.request<DOAITypes.ChatCompletionResponse<Choices>>('/api/v1/chat/completions', {
-      method: 'POST',
-      body: JSON.stringify(requestBody)
-    });
-  }
+  private convertChatRequest(request: StandardChatRequest): DOAITypes.ChatCompletionRequest {
+    const messages: DOAITypes.Message[] = request.messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
 
-  getOpenAIDocs() {
-    return this.request('/api/v1/openai/docs', {
-      method: 'GET'
-    });
+    return {
+      messages,
+      temperature: request.temperature ?? undefined,
+      top_p: request.top_p ?? undefined,
+      max_tokens: request.max_tokens ?? undefined,
+      stream: false // We'll handle streaming separately
+    };
   }
 
   /**
-   * Check the health status of the API.
-   *
-   * This endpoint is used to verify that the Digital Ocean AI Agent API is running
-   * and healthy. It returns a status message indicating the API's operational state.
-   *
-   * @returns Promise resolving to health status
-   *
-   * @example
-   * ```typescript
-   * const health = await client.health();
-   * console.log(`API Status: ${health.status}`);
-   * ```
+   * Convert Digital Ocean AI response to StandardChatResponse
    */
-  async health(): Promise<DOAITypes.HealthResponse> {
-    return this.request<DOAITypes.HealthResponse>('/health', {
-      method: 'GET'
-    });
+  private convertChatResponse(response: DOAITypes.ChatCompletionResponse<DOAITypes.NonStreamChoice[]>): StandardChatResponse {
+    const choice = response.choices[0];
+    if (!choice) {
+      throw new Error('No choices returned from Digital Ocean AI API');
+    }
+
+    return {
+      content: choice.message.content,
+      finish_reason: 'stop', // NonStreamChoice doesn't have finish_reason, assume 'stop'
+      usage: response.usage ? {
+        prompt_tokens: response.usage.prompt_tokens,
+        completion_tokens: response.usage.completion_tokens,
+        total_tokens: response.usage.total_tokens
+      } : {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0
+      }
+    };
+  }
+
+  /**
+   * Generate a chat response based on the conversation history
+   */
+  async chat(request: StandardChatRequest): Promise<StandardChatResponse> {
+    this.logger.debug('Making chat request');
+
+    const doaiRequest = this.convertChatRequest(request);
+    const response = await this.request<DOAITypes.ChatCompletionResponse<DOAITypes.NonStreamChoice[]>>(
+      '/api/v1/chat/completions',
+      {
+        method: 'POST',
+        body: JSON.stringify(doaiRequest)
+      }
+    );
+
+    return this.convertChatResponse(response);
+  }
+
+  /**
+   * Generate a completion for a given prompt by converting it to a chat request
+   */
+  async generate(request: StandardGenerateRequest): Promise<StandardGenerateResponse> {
+    this.logger.debug('Making generate request (converted to chat)');
+
+    // Convert generate request to chat format
+    const messages: StandardMessage[] = [];
+
+    if (request.system) {
+      messages.push({ role: 'system', content: request.system });
+    }
+
+    messages.push({ role: 'user', content: request.prompt });
+
+    const chatRequest: StandardChatRequest = {
+      messages,
+      ...(request.temperature !== undefined && { temperature: request.temperature }),
+      ...(request.top_p !== undefined && { top_p: request.top_p }),
+      ...(request.max_tokens !== undefined && { max_tokens: request.max_tokens })
+    };
+
+    const chatResponse = await this.chat(chatRequest);
+
+    return {
+      content: chatResponse.content,
+      finish_reason: chatResponse.finish_reason || 'stop',
+      usage: chatResponse.usage
+    };
   }
 }

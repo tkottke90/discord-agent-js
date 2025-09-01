@@ -78,20 +78,18 @@ export async function MessageCreate(message: OmitPartialGroupDMChannel<Message<b
     const doaiConfig = ConfigurationFile.get<Array<DOAIConfig>>('agents')[1]!;
     const doai = new DigitalOceanAIClient(doaiConfig);
 
-    const response = await doai.chatCompletions<NonStreamChoice[]>({
+    const response = await doai.chat({
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: message.content }
       ]
     });
 
-    const chatResponse = response.choices[0];
-
     // Await the reply system to handle any permission errors
     if (hasMention) {
-      await message.reply(chatResponse?.message?.content ?? '');
+      await message.reply(response.content);
     } else {
-      await message.channel.send(chatResponse?.message?.content ?? '');
+      await message.channel.send(response.content);
     }
 
     logger.debug('Successfully sent reply');

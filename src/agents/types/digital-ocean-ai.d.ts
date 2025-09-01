@@ -1,6 +1,8 @@
 // Digital Ocean AI Agent API TypeScript Definitions
 // Generated from OpenAPI specification: https://udubprby3wudv76jcukm3geo.agents.do-ai.run/openapi.json
 
+import { Nullable } from "../../types/utility.ts";
+
 // Base types
 export interface Message {
   /** Unique identifier for the message */
@@ -92,7 +94,7 @@ export interface StreamChoice {
   /** Index of the choice */
   index: number;
   /** Reason why the generation finished */
-  finish_reason: string | null;
+  finish_reason: Nullable<string>;
 }
 
 export interface NonStreamChoice {
@@ -109,41 +111,41 @@ export interface ChatCompletionRequest {
   /** List of messages representing the conversation history */
   messages: Message[];
   /** Sampling temperature (0-2). Higher values make output more random */
-  temperature?: number | null;
+  temperature?: Nullable<number>;
   /** Nucleus sampling threshold. Only top tokens with cumulative probability up to top_p are considered */
-  top_p?: number | null;
+  top_p?: Nullable<number>;
   /** Maximum tokens to generate in the completion */
-  max_tokens?: number | null;
+  max_tokens?: Nullable<number>;
   /** Maximum tokens to generate in the completion (interchangeable with max_tokens) */
-  max_completion_tokens?: number | null;
+  max_completion_tokens?: Nullable<number>;
   /** If true, streams the response; otherwise returns it as a single JSON object */
-  stream?: boolean | null;
+  stream?: Nullable<boolean>;
   /** Top results to return from the agent's associated knowledge bases */
-  k?: number | null;
+  k?: Nullable<number>;
   /** Strategy for retrieval-augmented generation */
-  retrieval_method?: RetrievalMethod | null;
+  retrieval_method?: Nullable<RetrievalMethod>;
   /** Penalty for new tokens based on their existing frequency (-2.0 to 2.0) */
-  frequency_penalty?: number | null;
+  frequency_penalty?: Nullable<number>;
   /** Penalty for new tokens based on their presence (-2.0 to 2.0) */
-  presence_penalty?: number | null;
+  presence_penalty?: Nullable<number>;
   /** Stop sequences that the model should stop generating at */
-  stop?: string | string[] | null;
+  stop?: Nullable<string | string[]>;
   /** Optional parameters for controlling the stream response */
-  stream_options?: StreamOptions | null;
+  stream_options?: Nullable<StreamOptions>;
   /** Filters to apply to the knowledge base */
-  kb_filters?: KBFilter[] | null;
+  kb_filters?: Nullable<KBFilter[]>;
   /** If true, metadata is extracted from the query and used to filter KB data */
-  filter_kb_content_by_query_metadata?: boolean | null;
+  filter_kb_content_by_query_metadata?: Nullable<boolean>;
   /** Override the default instruction for the agent */
-  instruction_override?: string | null;
+  instruction_override?: Nullable<string>;
   /** If true, includes metadata about called functions in the response */
-  include_functions_info?: boolean | null;
+  include_functions_info?: Nullable<boolean>;
   /** If true, includes metadata about retrieved documents in the response */
-  include_retrieval_info?: boolean | null;
+  include_retrieval_info?: Nullable<boolean>;
   /** If true, includes metadata about guardrails triggered in the response */
-  include_guardrails_info?: boolean | null;
+  include_guardrails_info?: Nullable<boolean>;
   /** If true, includes citations within the response */
-  provide_citations?: boolean | null;
+  provide_citations?: Nullable<boolean>;
 }
 
 // Response types
@@ -165,7 +167,7 @@ export interface ChatCompletionResponse<Choices extends StreamChoice[] | NonStre
   /** Metadata about retrieved documents */
   retrieval: RetrievalMeta;
   /** Token usage information */
-  usage: UsageMeta | null;
+  usage: Nullable<UsageMeta>;
 }
 
 // Health check response
