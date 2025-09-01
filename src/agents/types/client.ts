@@ -1,5 +1,14 @@
 import { z } from 'zod';
 import { Logger } from '../../utils/logging.js';
+import { JSONSchema, ToolCall } from './chat.js';
+
+export interface StandardUsage {
+  usage: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  }
+}
 
 export interface StandardMessage {
   role: string;
@@ -12,19 +21,34 @@ export interface StandardChatRequest {
   top_k?: number;
   top_p?: number;
   max_tokens?: number;
+  format?: 'json' | JSONSchema;
 }
 
-export interface StandardChatResponse {
+export interface StandardChatResponse extends StandardUsage {
   content: string;
   finish_reason?: string;
-  metadata: {
-    [key: string]: unknown;
+  tool_calls?: ToolCall[];
+}
 
-    // Token Consumption
-    totalToken: number;
-    promptToken?: number;
-    completionToken?: number;
-  };
+export interface StandardGenerateRequest {
+  // Core required field
+  prompt: string;
+  
+  // Common optional fields (same as chat)
+  stream?: boolean;
+  temperature?: number;
+  top_p?: number;
+  max_tokens?: number;
+  
+  // Generate-specific optional fields
+  system?: string;        // System prompt/instructions
+  suffix?: string;        // Text after response (for code completion)
+}
+
+export interface StandardGenerateResponse extends StandardUsage {
+  // Core response
+  content: string;
+  finish_reason?: string;
 }
 
 export const LLMClientConfigSchema = z.object({
@@ -68,7 +92,7 @@ export abstract class LLMClient<
    * Generate a completion for a given prompt.
    * @param request 
    */
-  abstract generate(request: unknown): Promise<unknown>;
+  abstract generate(request: StandardGenerateRequest): Promise<StandardGenerateResponse>;
 
   /**
    * Engines use a set of parameters including temperature, top_k, top_p
