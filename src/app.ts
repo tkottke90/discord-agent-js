@@ -6,11 +6,15 @@ import createDiscordBot from './discord/index.js';
 import { Logger } from './utils/logging.js';
 import ConfigurationFile from 'config';
 import * as Agents from './agents/index.js';
+import * as redis from './redis.js';
 
 export default function createApp(
   callback?: (app: express.Application, options: AppConfig) => void,
 ) {
   const logger = new Logger('Server');
+
+  // Initialize Redis Cache
+  redis.initialize();
 
   // Normalize Options
   let config = {};

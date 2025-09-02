@@ -16,5 +16,11 @@
   "discord": {
     "token": "",
     "inviteUrl": ""
+  },
+  "cache": {
+    "location": "redis://localhost:3000",
+    "username": "",
+    "password": "",
+    "ssl": false
   }
 }

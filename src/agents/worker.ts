@@ -24,7 +24,7 @@ function main() {
 
   parentPort?.on('message', async message => {
     logger.debug(
-      `Worker-${threadId} received message: ${JSON.stringify(message)}`,
+      `Received message: ${JSON.stringify(message)}`,
     );
 
     const response = await messageReducer(message);
