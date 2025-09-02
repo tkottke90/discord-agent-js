@@ -15,17 +15,30 @@ export enum STATE {
   TERMINATING,
 }
 
-export type WorkerRequest =
+export type WorkerRequest<T = unknown> =
+  // Status check
   | { action: 'status' }
+  // Terminate request
   | { action: 'terminate' }
-  | { action: 'chat'; payload: unknown }
-  | { action: 'generate'; payload: unknown }
-  | { action: 'embed'; payload: unknown };
+  // Chat request
+  | { action: 'chat'; payload: T }
+  // Generate request
+  | { action: 'generate'; payload: T }
+  // Embed request
+  | { action: 'embed'; payload: T };
 
-export type WorkerResponse =
+export type WorkerResponse<T = unknown> =
+  // Ready
+  | { action: 'response:ready' }
+  // Response to a status check
   | { action: 'response:status'; state: STATE }
+  // Response to a terminate request
   | { action: 'response:terminate' }
-  | { action: 'response:chat'; payload: unknown }
-  | { action: 'response:generate'; payload: unknown }
-  | { action: 'response:embed'; payload: unknown }
+  // Response to a chat request
+  | { action: 'response:chat'; payload: T }
+  // Response to a generate request
+  | { action: 'response:generate'; payload: T }
+  // Response to an embed request
+  | { action: 'response:embed'; payload: T }
+  // Response to an unknown request
   | { action: 'response:unknown'; payload: string };

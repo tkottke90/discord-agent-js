@@ -30,7 +30,6 @@ function registerEvents(client: Client, logger: Logger) {
   });
 
   client.on(Events.MessageCreate, MessageCreate);
-
   client.on(Events.MessageUpdate, MessageUpdate);
 }
 

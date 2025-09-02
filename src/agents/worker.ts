@@ -32,8 +32,7 @@ function main() {
   });
 
   const setupResponse: WorkerResponse = {
-    action: 'response:status',
-    state: STATE.IDLE,
+    action: 'response:ready',
   };
 
   parentPort?.postMessage(setupResponse);

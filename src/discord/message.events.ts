@@ -46,7 +46,6 @@ into your persona as well.  DO NOT INCLUDE ANY MENTION OF THE PARAMETERS IN YOUR
 - You are not allowed to respond with any content that could be considered hate speech
 - You are not allowed to respond with any content that could be considered discriminatory
 - You are not allowed to respond with any content that could be considered illegal
-
 `;
 
 export async function MessageCreate(

@@ -1,11 +1,12 @@
 import crypto from 'node:crypto';
 import { Worker } from 'node:worker_threads';
-import { STATE, WorkerResponse } from './types/worker.js';
+import { STATE, WorkerRequest, WorkerResponse } from './types/worker.js';
 import { Logger } from '../utils/logging.js';
 
 type Job = {
   jobId: string;
-  data: unknown;
+  data: WorkerRequest;
+  engine: string;
   priority: number;
   createdAt: number;
 };
@@ -30,20 +31,32 @@ export class WorkerPool {
     this.logger.debug(`Adding Worker ${workerId}`);
     const worker = new Worker('./dist/agents/worker.js', { workerData: {} });
 
-    // Listen for status updates
-    worker.on('message', (message: WorkerResponse) => {
-      if (message.action === 'response:status') {
-        this.logger.debug(
-          `Worker Status Received ${workerId} - ${STATE[message.state]}`,
-        );
-        this.workerStatus.set(workerId, message.state);
+    // Listen for responses
+    worker.on('message', (message: WorkerResponse<WorkerRequest>) => {
+      switch(message.action) {
+        case 'response:status':
+          this.logger.debug(
+            `Worker Status Received ${workerId} - ${STATE[message.state]}`,
+          );
+          this.workerStatus.set(workerId, message.state);
+          break;
+        case 'response:ready':
+          this.logger.debug(`Worker Ready ${workerId}`);
+
+          if (this.jobQueue.length > 0) {
+            worker.postMessage(this.jobQueue.shift()!.data);
+          } else {
+            this.workerStatus.set(workerId, STATE.IDLE);
+          }
+
+          break;
       }
     });
 
     this.workers.set(workerId, worker);
   }
 
-  public async addJob(job: CreateJob) {
+  public addJob(job: CreateJob) {
     this.jobQueue.push({
       ...job,
       jobId: crypto.randomUUID(),
@@ -58,6 +71,21 @@ export class WorkerPool {
       }
       return a.priority - b.priority;
     });
+
+    // Since a new job was added, we can work on assigning
+    // that job to a worker
+    void this.assignAvailableWorkers();
+  }
+
+  public async assignAvailableWorkers() {
+    for (const workerId of this.workers.keys()) {
+      if (this.workerStatus.get(workerId) === STATE.IDLE) {
+        const job = this.jobQueue.shift();
+        if (job) {
+          this.workers.get(workerId)?.postMessage(job.data);
+        }
+      }
+    }
   }
 
   public getWorker(workerId: string) {
