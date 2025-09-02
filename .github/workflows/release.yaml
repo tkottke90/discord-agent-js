@@ -1,0 +1,178 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a GitHub release'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      docker-tag: ${{ steps.set-docker-tag.outputs.docker-tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --watchAll=false --coverage
+
+      - name: Run build
+        run: npm run build
+
+      - name: Get version from package.json
+        id: get-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Set Docker tag
+        id: set-docker-tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            DOCKER_TAG="${{ steps.get-version.outputs.version }}_SNAPSHOT"
+          else
+            DOCKER_TAG="${{ steps.get-version.outputs.version }}"
+          fi
+          echo "docker-tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "Docker tag: $DOCKER_TAG"
+
+      - name: Build Docker image
+        run: |
+          docker build -t discord-agent:${{ steps.set-docker-tag.outputs.docker-tag }} .
+
+      - name: Save Docker image as tar
+        run: |
+          docker save discord-agent:${{ steps.set-docker-tag.outputs.docker-tag }} -o discord-agent-${{ steps.set-docker-tag.outputs.docker-tag }}.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ steps.set-docker-tag.outputs.docker-tag }}
+          path: discord-agent-${{ steps.set-docker-tag.outputs.docker-tag }}.tar
+          retention-days: 30
+
+  request-approval:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
+    environment:
+      name: release-approval
+
+    steps:
+      - name: Request approval for release
+        run: |
+          echo "🚀 Release approval requested for version ${{ needs.build-and-test.outputs.version }}"
+          echo "Docker image built with tag: ${{ needs.build-and-test.outputs.docker-tag }}"
+          echo "Please review and approve this release."
+
+  create-release:
+    needs: [build-and-test, request-approval]
+    runs-on: ubuntu-latest
+    if: always() && (needs.request-approval.result == 'success' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Create version bump branch
+        run: |
+          BRANCH_NAME="version-bump-$(date +%s)"
+          git checkout -b $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Bump version
+        run: |
+          npm version minor --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $NEW_VERSION"
+
+      - name: Push version bump branch
+        run: |
+          git push origin $BRANCH_NAME
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ needs.build-and-test.outputs.docker-tag }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build-and-test.outputs.version }}
+          name: Release v${{ needs.build-and-test.outputs.version }}
+          body: |
+            ## Release v${{ needs.build-and-test.outputs.version }}
+
+            ### Changes
+            - Docker image: `discord-agent:${{ needs.build-and-test.outputs.docker-tag }}`
+
+            ### Artifacts
+            - Docker image tar file attached to this release
+
+            ### Next Steps
+            - A PR will be created to bump the version to ${{ env.NEW_VERSION }}
+          files: |
+            discord-agent-${{ needs.build-and-test.outputs.docker-tag }}.tar
+            docker-compose.yaml
+          draft: false
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          base: main
+          title: "chore: bump version to ${{ env.NEW_VERSION }}"
+          body: |
+            ## Version Bump
+
+            This PR bumps the version from ${{ needs.build-and-test.outputs.version }} to ${{ env.NEW_VERSION }} following the release.
+
+            ### Changes
+            - Updated `package.json` version
+            - Updated `package-lock.json` version
+
+            This PR was automatically created by the release workflow.
+          delete-branch: true

@@ -7,12 +7,17 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "dev": "nodemon",
+    "setup": "docker-compose up -f docker-compose.dev.yaml -d",
     "start": "node dist/index.js",
     "format": "prettier -w src && eslint --fix",
     "test": "jest --watch"
   },
   "keywords": [],
-  "author": "",
+  "repo": {
+    "type": "git",
+    "url": "https://github.com/tkottke90/discord-agent-js.git"
+  },
+  "author": "Thomas Kottke <t.kottke90@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.34.0",
@@ -29,6 +34,7 @@
     "jiti": "^2.5.1",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
+    "redis": "^5.8.2",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",

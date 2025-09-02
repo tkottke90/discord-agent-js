@@ -1,0 +1,11 @@
+
+services:
+
+  redis:
+    image: redis:7.2.0
+    container_name: discord_redis_dev
+    ports:
+      - 6379:6379
+    restart: always
+    volumes:
+      - ./data/redis-data:/data
