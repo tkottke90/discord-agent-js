@@ -10,7 +10,7 @@ import {
   DigitalOceanAIClient,
   DOAIConfig,
 } from '../agents/llm-clients/digital-ocean.client.js';
-import { replyMessage, sendMessage } from './helpers.js';
+import { responseHandler } from './helpers.js';
 import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client.js';
 import { LLMClientConfig } from '../agents/types/client.js';
 
@@ -109,6 +109,8 @@ export async function MessageCreate(
     // Get the LLM engine
     const engine = getLlmClient();
 
+    await message.channel.sendTyping();
+
     // Get the response from the LLM engine
     const response = await engine.chat({
       model: 'mistral:7b',
@@ -118,11 +120,10 @@ export async function MessageCreate(
       ],
     });
 
-    // Await the reply system to handle any permission errors
     if (hasMention) {
-      await replyMessage(message, response.content);
+      await responseHandler('reply', message, response.content);
     } else {
-      await sendMessage(message.channel, response.content);
+      await responseHandler('send', message.channel, response.content);
     }
 
     logger.debug('Successfully sent reply');
@@ -132,7 +133,7 @@ export async function MessageCreate(
     // Try to send a simple error message if possible
     try {
       // await message.channel.send('Sorry, I encountered an error processing your message.');
-      await message.reply(
+      await message.channel.send(
         'Sorry, I encountered an error processing your message.',
       );
     } catch (replyError) {

@@ -67,6 +67,29 @@ export function chunkMessage(text: string, maxLength: number = 2000): string[] {
   return chunks;
 }
 
+export async function responseHandler(type: 'reply', target: MessageReplier, message: string): Promise<void>;
+export async function responseHandler(type: 'send', target: MessageSender | MessageReplier, message: string): Promise<void>;
+export async function responseHandler(type: 'dm', target: MessageSender, message: string): Promise<void>;
+export async function responseHandler(
+  type: 'reply' | 'send' | 'dm',
+  target: MessageSender | MessageReplier,
+  message: string
+): Promise<void> {
+  switch (type) {
+    case 'reply':
+      await replyMessage(target as MessageReplier, message);
+      break;
+    case 'send':
+      await sendMessage(target as MessageSender, message);
+      break;
+    case 'dm':
+      await sendMessage(target as MessageSender, message);
+      break;
+    default:
+      throw new Error(`Unknown response handler type: ${type}`);
+  }
+}
+
 /**
  * Replies to a message with any Discord entity that has a .reply method
  * Automatically chunks the message if it's too long
