@@ -1,6 +1,7 @@
 {
   "discord": {
     "token": "DISCORD_TOKEN",
-    "inviteUrl": "DISCORD_INVITE_URL"
+    "inviteUrl": "DISCORD_INVITE_URL",
+    "llmClient": "DISCORD_ENGINE"
   }
 }

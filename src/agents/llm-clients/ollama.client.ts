@@ -16,6 +16,8 @@ export const OllamaConfigSchema = LLMClientConfigSchema.clone();
 
 export type OllamaConfig = z.infer<typeof OllamaConfigSchema>;
 
+type OllamaRequest = StandardChatRequest & { model: string };
+
 /**
  * Ollama API Client
  * Implements the complete Ollama API with support for streaming, chat, embeddings, and model management
@@ -67,7 +69,7 @@ export class OllamaClient extends LLMClient<
   /**
    * Generate the next message in a chat conversation.
    */
-  async chat(request: StandardChatRequest): Promise<StandardChatResponse> {
+  async chat(request: OllamaRequest): Promise<StandardChatResponse> {
     this.logger.debug('Making chat request');
 
     const ollamaRequest = this.convertChatRequest(request);
@@ -233,7 +235,7 @@ export class OllamaClient extends LLMClient<
    * Convert StandardChatRequest to Ollama format
    */
   private convertChatRequest(
-    request: StandardChatRequest,
+    request: OllamaRequest,
   ): OllamaTypes.ChatRequest {
     const messages: OllamaTypes.Message[] = request.messages.map(msg => ({
       role: msg.role as OllamaTypes.MessageRole,
@@ -241,7 +243,7 @@ export class OllamaClient extends LLMClient<
     }));
 
     const ollamaRequest: OllamaTypes.ChatRequest = {
-      model: 'llama3.2', // Default model, could be configurable
+      model: request.model, // Default model, could be configurable
       messages,
       stream: false,
     };

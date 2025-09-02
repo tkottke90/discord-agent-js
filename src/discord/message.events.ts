@@ -11,6 +11,8 @@ import {
   DOAIConfig,
 } from '../agents/llm-clients/digital-ocean.client.js';
 import { replyMessage, sendMessage } from './helpers.js';
+import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client.js';
+import { LLMClientConfig } from '../agents/types/client.js';
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.
@@ -48,6 +50,24 @@ into your persona as well.  DO NOT INCLUDE ANY MENTION OF THE PARAMETERS IN YOUR
 - You are not allowed to respond with any content that could be considered illegal
 `;
 
+export function getLlmClient() {
+  const discordClient = ConfigurationFile.get('discord.llmClient');
+  const llmClient = ConfigurationFile.get<LLMClientConfig>(`llmClients.${discordClient}`);
+
+  if (!llmClient) {
+    throw new Error(`No LLM client configured for ${discordClient}`);
+  }
+
+  switch(llmClient.engine) {
+    case 'ollama':
+      return new OllamaClient(llmClient as OllamaConfig);
+    case 'digitalocean':
+      return new DigitalOceanAIClient(llmClient as DOAIConfig);
+    default:
+      throw new Error(`Unknown LLM engine: ${discordClient}`);
+  }
+}
+
 export async function MessageCreate(
   message: OmitPartialGroupDMChannel<Message<boolean>>,
 ) {
@@ -66,7 +86,7 @@ export async function MessageCreate(
     return;
   }
 
-  logger.info(`Message from ${message.author.username}: ${message.content}`);
+  logger.info(`Message Received [Author: ${message.author.username}] [Message: ${message.content.slice(0, 20)}...]`);
 
   try {
     // Check if bot has necessary permissions
@@ -83,15 +103,15 @@ export async function MessageCreate(
       return;
     }
 
+    // Check if bot is mentioned
     const hasMention = message.mentions.has(message.client.user!.id);
 
-    // const ollamaConfig = ConfigurationFile.get<Array<OllamaConfig>>('agents');
-    // const ollama = new OllamaClient(ollamaConfig[0]!);
+    // Get the LLM engine
+    const engine = getLlmClient();
 
-    const doaiConfig = ConfigurationFile.get<Array<DOAIConfig>>('agents')[1]!;
-    const doai = new DigitalOceanAIClient(doaiConfig);
-
-    const response = await doai.chat({
+    // Get the response from the LLM engine
+    const response = await engine.chat({
+      model: 'mistral:7b',
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: message.content },

@@ -34,6 +34,7 @@ export interface StandardChatResponse extends StandardUsage {
 export interface StandardGenerateRequest {
   // Core required field
   prompt: string;
+  model?: string;
 
   // Common optional fields (same as chat)
   stream?: boolean;
@@ -81,8 +82,10 @@ export const LLMClientConfigSchema = z.object({
     .optional(),
 });
 
+export type LLMClientConfig = z.infer<typeof LLMClientConfigSchema>;
+
 export abstract class LLMClient<
-  Config extends z.infer<typeof LLMClientConfigSchema>,
+  Config extends LLMClientConfig,
   ChatRequest extends StandardChatRequest,
   ChatResponse extends StandardChatResponse,
 > {

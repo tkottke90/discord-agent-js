@@ -7,7 +7,7 @@
     "min": 1,
     "max": 10
   },
-  "agents": [
+  "llmClients": [
     {
       "engine": "ollama",
       "baseUrl": "http://localhost:11434"
