@@ -113,4 +113,13 @@ export class WorkerPool {
       return this.workerStatus.get(workerId);
     }
   }
+
+  public async shutdown() {
+    this.logger.debug('Shutting down Worker Pool...');
+
+    for (const workerId of this.workers.keys()) {
+      this.logger.debug(`Terminating Worker ${workerId}`);
+      this.workers.get(workerId)?.terminate();
+    }
+  }
 }

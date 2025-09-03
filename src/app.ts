@@ -8,6 +8,10 @@ import ConfigurationFile from 'config';
 import * as Agents from './agents/index.js';
 import * as redis from './redis.js';
 
+async function shutdown() {
+  Agents.getPool().shutdown();
+}
+
 export default async function createApp(
   callback?: (app: express.Application, options: AppConfig) => void,
 ) {
@@ -51,5 +55,17 @@ export default async function createApp(
         `Server listening on http://${normalizedOptions.host}:${normalizedOptions.port}`,
       );
     }
+  });
+
+  process.on('SIGTERM', async () => {
+    logger.info('Received SIGTERM, shutting down...');
+    await shutdown();
+    process.exit(0);
+  });
+
+  process.on('SIGINT', async () => {
+    logger.info('Received SIGINT, shutting down...');
+    await shutdown();
+    process.exit(0);
   });
 }
