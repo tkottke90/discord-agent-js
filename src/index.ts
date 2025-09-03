@@ -1,7 +1,7 @@
 import createApp from './app.js';
 
 async function main() {
-  createApp();
+  await createApp();
 }
 
 main();
