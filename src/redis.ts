@@ -32,5 +32,9 @@ export async function initialize() {
 
 export async function clone() {
   logger.debug('Cloning Redis client...');
-  return client.duplicate();
+  const clonedClient = await client.duplicate();
+
+  await clonedClient.connect();
+
+  return clonedClient;
 }
