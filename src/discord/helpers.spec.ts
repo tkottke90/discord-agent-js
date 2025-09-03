@@ -1,4 +1,10 @@
-import { chunkMessage, sendMessage, sendMessages, replyMessage, replyMessages } from './helpers.js';
+import {
+  chunkMessage,
+  sendMessage,
+  sendMessages,
+  replyMessage,
+  replyMessages,
+} from './helpers.js';
 import type { MessageSender, MessageReplier } from './interfaces.js';
 import type { Message } from 'discord.js';
 
@@ -56,18 +62,18 @@ describe('Discord Helpers', () => {
     it('should send a single message for short text', async () => {
       const mockSender = new MockMessageSender();
       const text = 'Hello, world!';
-      
+
       await sendMessage(mockSender, text);
-      
+
       expect(mockSender.sentMessages).toEqual([text]);
     });
 
     it('should send multiple messages for long text', async () => {
       const mockSender = new MockMessageSender();
       const text = 'A'.repeat(3000);
-      
+
       await sendMessage(mockSender, text, 2000);
-      
+
       expect(mockSender.sentMessages).toHaveLength(2);
       expect(mockSender.sentMessages[0]).toHaveLength(2000);
       expect(mockSender.sentMessages[1]).toHaveLength(1000);
@@ -78,18 +84,18 @@ describe('Discord Helpers', () => {
     it('should send multiple messages in sequence', async () => {
       const mockSender = new MockMessageSender();
       const messages = ['Message 1', 'Message 2', 'Message 3'];
-      
+
       await sendMessages(mockSender, messages);
-      
+
       expect(mockSender.sentMessages).toEqual(messages);
     });
 
     it('should skip empty messages', async () => {
       const mockSender = new MockMessageSender();
       const messages = ['Message 1', '', 'Message 3'];
-      
+
       await sendMessages(mockSender, messages);
-      
+
       expect(mockSender.sentMessages).toEqual(['Message 1', 'Message 3']);
     });
   });
@@ -143,7 +149,7 @@ describe('Discord Helpers', () => {
         async send(text: string): Promise<Message> {
           console.log(`Sending: ${text}`);
           return {} as Message;
-        }
+        },
       };
 
       // This should compile without errors, proving type compatibility
@@ -156,7 +162,7 @@ describe('Discord Helpers', () => {
         async reply(text: string): Promise<Message> {
           console.log(`Replying: ${text}`);
           return {} as Message;
-        }
+        },
       };
 
       // This should compile without errors, proving type compatibility

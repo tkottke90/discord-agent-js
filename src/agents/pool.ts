@@ -33,7 +33,7 @@ export class WorkerPool {
 
     // Listen for responses
     worker.on('message', (message: WorkerResponse<WorkerRequest>) => {
-      switch(message.action) {
+      switch (message.action) {
         case 'response:status':
           this.logger.debug(
             `Worker Status Received ${workerId} - ${STATE[message.state]}`,

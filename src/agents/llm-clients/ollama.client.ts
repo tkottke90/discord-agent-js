@@ -234,9 +234,7 @@ export class OllamaClient extends LLMClient<
   /**
    * Convert StandardChatRequest to Ollama format
    */
-  private convertChatRequest(
-    request: OllamaRequest,
-  ): OllamaTypes.ChatRequest {
+  private convertChatRequest(request: OllamaRequest): OllamaTypes.ChatRequest {
     const messages: OllamaTypes.Message[] = request.messages.map(msg => ({
       role: msg.role as OllamaTypes.MessageRole,
       content: msg.content,

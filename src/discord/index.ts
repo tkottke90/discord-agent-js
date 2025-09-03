@@ -27,7 +27,7 @@ async function setupInternalListener(client: Client, logger: Logger) {
   redisClient.subscribe(DISCORD_CHANNEL, (message: string) => {
     const data = JSON.parse(message) as DiscordEvents;
 
-    switch(data.type) {
+    switch (data.type) {
       case 'send:channel':
         client.channels.fetch(data.channelId).then(channel => {
           if (channel?.isTextBased() && 'send' in channel) {
@@ -52,7 +52,6 @@ async function setupInternalListener(client: Client, logger: Logger) {
         });
         break;
     }
-
 
     console.log('Received message:', message);
   });

@@ -1,4 +1,3 @@
-
 import type { Message } from 'discord.js';
 import type { MessageSender, MessageReplier } from './interfaces.js';
 
@@ -46,7 +45,8 @@ export function chunkMessage(text: string, maxLength: number = 2000): string[] {
       }
     } else {
       // Check if adding this line would exceed the limit
-      const potentialChunk = currentChunk + (currentChunk.length > 0 ? '\n' : '') + line;
+      const potentialChunk =
+        currentChunk + (currentChunk.length > 0 ? '\n' : '') + line;
       if (potentialChunk.length > maxLength) {
         // Save current chunk and start new one
         if (currentChunk.length > 0) {
@@ -67,13 +67,25 @@ export function chunkMessage(text: string, maxLength: number = 2000): string[] {
   return chunks;
 }
 
-export async function responseHandler(type: 'reply', target: MessageReplier, message: string): Promise<void>;
-export async function responseHandler(type: 'send', target: MessageSender | MessageReplier, message: string): Promise<void>;
-export async function responseHandler(type: 'dm', target: MessageSender, message: string): Promise<void>;
+export async function responseHandler(
+  type: 'reply',
+  target: MessageReplier,
+  message: string,
+): Promise<void>;
+export async function responseHandler(
+  type: 'send',
+  target: MessageSender | MessageReplier,
+  message: string,
+): Promise<void>;
+export async function responseHandler(
+  type: 'dm',
+  target: MessageSender,
+  message: string,
+): Promise<void>;
 export async function responseHandler(
   type: 'reply' | 'send' | 'dm',
   target: MessageSender | MessageReplier,
-  message: string
+  message: string,
 ): Promise<void> {
   switch (type) {
     case 'reply':
@@ -101,7 +113,7 @@ export async function responseHandler(
 export async function replyMessage(
   replier: MessageReplier,
   text: string,
-  maxLength: number = 1800
+  maxLength: number = 1800,
 ): Promise<Message[]> {
   const chunks = chunkMessage(text, maxLength);
   const sentMessages: Message[] = [];
@@ -129,7 +141,7 @@ export async function replyMessage(
 export async function replyMessages(
   replier: MessageReplier,
   messages: string[],
-  delayMs: number = 0
+  delayMs: number = 0,
 ): Promise<Message[]> {
   const sentMessages: Message[] = [];
 
@@ -165,7 +177,7 @@ export async function replyMessages(
 export async function sendMessage(
   sender: MessageSender,
   text: string,
-  maxLength: number = 1800
+  maxLength: number = 1800,
 ): Promise<Message[]> {
   const chunks = chunkMessage(text, maxLength);
   const sentMessages: Message[] = [];
@@ -193,7 +205,7 @@ export async function sendMessage(
 export async function sendMessages(
   sender: MessageSender,
   messages: string[],
-  delayMs: number = 0
+  delayMs: number = 0,
 ): Promise<Message[]> {
   const sentMessages: Message[] = [];
 

@@ -23,9 +23,7 @@ function main() {
   logger.debug(`Worker started - Worker-${threadId}`);
 
   parentPort?.on('message', async message => {
-    logger.debug(
-      `Received message: ${JSON.stringify(message)}`,
-    );
+    logger.debug(`Received message: ${JSON.stringify(message)}`);
 
     const response = await messageReducer(message);
     parentPort?.postMessage(response);

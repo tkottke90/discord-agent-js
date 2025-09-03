@@ -11,7 +11,10 @@ import {
   DOAIConfig,
 } from '../agents/llm-clients/digital-ocean.client.js';
 import { responseHandler } from './helpers.js';
-import { OllamaClient, OllamaConfig } from '../agents/llm-clients/ollama.client.js';
+import {
+  OllamaClient,
+  OllamaConfig,
+} from '../agents/llm-clients/ollama.client.js';
 import { LLMClientConfig } from '../agents/types/client.js';
 
 const system = `# ROLE
@@ -52,13 +55,15 @@ into your persona as well.  DO NOT INCLUDE ANY MENTION OF THE PARAMETERS IN YOUR
 
 export function getLlmClient() {
   const discordClient = ConfigurationFile.get('discord.llmClient');
-  const llmClient = ConfigurationFile.get<LLMClientConfig>(`llmClients.${discordClient}`);
+  const llmClient = ConfigurationFile.get<LLMClientConfig>(
+    `llmClients.${discordClient}`,
+  );
 
   if (!llmClient) {
     throw new Error(`No LLM client configured for ${discordClient}`);
   }
 
-  switch(llmClient.engine) {
+  switch (llmClient.engine) {
     case 'ollama':
       return new OllamaClient(llmClient as OllamaConfig);
     case 'digitalocean':
@@ -86,7 +91,9 @@ export async function MessageCreate(
     return;
   }
 
-  logger.info(`Message Received [Author: ${message.author.username}] [Message: ${message.content.slice(0, 20)}...]`);
+  logger.info(
+    `Message Received [Author: ${message.author.username}] [Message: ${message.content.slice(0, 20)}...]`,
+  );
 
   try {
     // Check if bot has necessary permissions
