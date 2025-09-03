@@ -7,18 +7,19 @@
     "min": 1,
     "max": 10
   },
-  "llmClients": [
-    {
+  "llmClients": {
+    "ollama": {
       "engine": "ollama",
       "baseUrl": "http://localhost:11434"
     }
-  ],
+  },
   "discord": {
     "token": "",
-    "inviteUrl": ""
+    "inviteUrl": "",
+    "llmClient": "ollama"
   },
   "cache": {
-    "location": "redis://localhost:3000",
+    "location": "redis://localhost:6379",
     "username": "",
     "password": "",
     "ssl": false
