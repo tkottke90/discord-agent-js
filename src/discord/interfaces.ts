@@ -1,12 +1,4 @@
-import z from 'zod';
 import type { Message, MessageCreateOptions, MessagePayload } from 'discord.js';
-
-export const DiscordConfigSchema = z.object({
-  token: z.string().min(1),
-  inviteUrl: z.string().optional(),
-});
-
-export type DiscordConfig = z.infer<typeof DiscordConfigSchema>;
 
 /**
  * Type representing any Discord entity that can send messages.

@@ -3,10 +3,11 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { Logger } from '../utils/logging.js';
 import { MessageCreate, MessageUpdate } from './message.events.js';
 import ConfigurationFile from 'config';
-import { DiscordConfigSchema, DiscordEvents } from './interfaces.js';
+import { DiscordEvents } from './interfaces.js';
 import { prettyZodErrors } from '../utils/zod-errors.js';
 import { checkBotPermissions, generateInviteUrl } from './permissions.js';
 import * as redis from '../redis.js';
+import { DiscordConfigSchema } from '../interfaces/config.js';
 
 const DISCORD_CHANNEL = 'discord';
 

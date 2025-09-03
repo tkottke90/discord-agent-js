@@ -1,4 +1,4 @@
-import { AppConfigSchema, type AppConfig } from './interfaces/app.js';
+import { ServerSchema, type ServerConfig } from './interfaces/config.js';
 import express from 'express';
 import controllers from './controllers/index.js';
 import { HttpEventMiddleware } from './middleware/http-log.middleware.js';
@@ -13,7 +13,7 @@ async function shutdown() {
 }
 
 export default async function createApp(
-  callback?: (app: express.Application, options: AppConfig) => void,
+  callback?: (app: express.Application, options: ServerConfig) => void,
 ) {
   const logger = new Logger('Server');
 
@@ -23,10 +23,10 @@ export default async function createApp(
   // Normalize Options
   let config = {};
   if (ConfigurationFile.has('server')) {
-    config = { ...ConfigurationFile.get<AppConfig>('server') };
+    config = { ...ConfigurationFile.get<ServerConfig>('server') };
   }
 
-  const normalizedOptions: AppConfig = AppConfigSchema.parse(config);
+  const normalizedOptions: ServerConfig = ServerSchema.parse(config);
 
   // Create Express App
   const app = express();
