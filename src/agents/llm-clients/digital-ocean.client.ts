@@ -11,11 +11,7 @@ import {
 } from '../types/client.js';
 import * as DOAITypes from '../types/digital-ocean-ai.js';
 
-export const DOAIConfigSchema = LLMClientConfigSchema.extend({
-  auth: z.object({
-    bearer: z.string().min(1, 'Bearer token is required'),
-  }),
-});
+export const DOAIConfigSchema = LLMClientConfigSchema.extend({});
 
 export type DOAIConfig = z.infer<typeof DOAIConfigSchema>;
 
@@ -40,7 +36,7 @@ export class DigitalOceanAIClient extends LLMClient<
     this.timeout = this.config.timeout;
     this.headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.config.auth.bearer}`,
+      Authorization: `Bearer ${this.config.auth!.bearer}`,
       ...this.config.headers,
     };
 

@@ -147,3 +147,5 @@ export abstract class LLMClient<
     return Math.min(Math.max(param, 0), 1);
   }
 }
+
+export type GenericLLMClient = LLMClient<LLMClientConfig, StandardChatRequest, StandardChatResponse>;

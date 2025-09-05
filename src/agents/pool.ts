@@ -2,6 +2,9 @@ import crypto from 'node:crypto';
 import { Worker } from 'node:worker_threads';
 import { STATE, WorkerRequest, WorkerResponse } from './types/worker.js';
 import { Logger } from '../utils/logging.js';
+import { WorkerConfig } from './worker/worker.js';
+import ConfigurationFile from 'config';
+import { RedisConfig, LLMClientMap } from '../interfaces/config.js';
 
 type Job = {
   jobId: string;
@@ -29,7 +32,14 @@ export class WorkerPool {
 
   public addWorker(workerId: string = crypto.randomUUID()) {
     this.logger.debug(`Adding Worker ${workerId}`);
-    const worker = new Worker('./dist/agents/worker.js', { workerData: {} });
+
+    const workerConfig: WorkerConfig = {
+      workerId,
+      redis: ConfigurationFile.get<RedisConfig>('cache'),
+      llmClients: ConfigurationFile.get<LLMClientMap>('llmClients'),
+    };
+
+    const worker = new Worker('./dist/agents/worker/index.js', { workerData: JSON.stringify(workerConfig) });
 
     // Listen for responses
     worker.on('message', (message: WorkerResponse<WorkerRequest>) => {
