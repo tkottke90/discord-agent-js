@@ -53,8 +53,6 @@ async function setupInternalListener(client: Client, logger: Logger) {
         });
         break;
     }
-
-    console.log('Received message:', message);
   });
 }
 

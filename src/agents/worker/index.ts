@@ -32,7 +32,7 @@ function setupMessageHandler(config: WorkerConfig, logger: Logger) {
   logger.debug(`LLM Clients Initialized: ${[...llmClients.keys()]}`);
 
   return (message: WorkerRequest) => {
-    logger.debug(`Received message: ${JSON.stringify(message)}`);
+    logger.debug(`Received message: ${JSON.stringify(message).substring(0, 20)}...`);
   }
 }
 

@@ -10,12 +10,15 @@ import {
   DigitalOceanAIClient,
   DOAIConfig,
 } from '../agents/llm-clients/digital-ocean.client.js';
-import { responseHandler } from './helpers.js';
 import {
   OllamaClient,
   OllamaConfig,
 } from '../agents/llm-clients/ollama.client.js';
 import { LLMClientConfig } from '../agents/types/client.js';
+import { getClient } from '../redis.js';
+import { WorkerRequest } from '../agents/types/worker.js';
+import {  } from '../agents/pool.js';
+import { getPool } from '../agents/index.js';
 
 const system = `# ROLE
 You are a helpful AI assistant assigned to a Discord server. Your task is to assist users in what ever way you can.
@@ -77,6 +80,7 @@ export async function MessageCreate(
   message: OmitPartialGroupDMChannel<Message<boolean>>,
 ) {
   const logger = new Logger('Discord.MessageCreate');
+  const redisClient = getClient();
 
   if (message.author.bot) {
     logger.debug('Message Created By Bot, Ignored....');
@@ -113,25 +117,37 @@ export async function MessageCreate(
     // Check if bot is mentioned
     const hasMention = message.mentions.has(message.client.user!.id);
 
-    // Get the LLM engine
-    const engine = getLlmClient();
+    getPool().addJob({
+      engine: 'digitalocean',
+      data: {
+        action: 'chat',
+        payload: {
+          model: 'mistral:7b',
+          hasMention: hasMention,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: message.content },
+          ],
+        },
+      },
+    })
+    // // Get the LLM engine
+    // const engine = getLlmClient();
 
-    await message.channel.sendTyping();
+    // // Get the response from the LLM engine
+    // const response = await engine.chat({
+    //   model: 'mistral:7b',
+    //   messages: [
+    //     { role: 'system', content: system },
+    //     { role: 'user', content: message.content },
+    //   ],
+    // });
 
-    // Get the response from the LLM engine
-    const response = await engine.chat({
-      model: 'mistral:7b',
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: message.content },
-      ],
-    });
-
-    if (hasMention) {
-      await responseHandler('reply', message, response.content);
-    } else {
-      await responseHandler('send', message.channel, response.content);
-    }
+    // if (hasMention) {
+    //   await responseHandler('reply', message, response.content);
+    // } else {
+    //   await responseHandler('send', message.channel, response.content);
+    // }
 
     logger.debug('Successfully sent reply');
   } catch (error) {

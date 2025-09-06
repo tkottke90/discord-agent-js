@@ -43,6 +43,14 @@ export async function initialize() {
   }
 }
 
+export function getClient() {
+  if (!client) {
+    throw new Error('Redis client not initialized');
+  }
+
+  return client;
+}
+
 export async function clone() {
   logger.debug('Cloning Redis client...');
   const clonedClient = await client.duplicate();
