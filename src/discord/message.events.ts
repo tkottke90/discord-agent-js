@@ -80,7 +80,6 @@ export async function MessageCreate(
   message: OmitPartialGroupDMChannel<Message<boolean>>,
 ) {
   const logger = new Logger('Discord.MessageCreate');
-  const redisClient = getClient();
 
   if (message.author.bot) {
     logger.debug('Message Created By Bot, Ignored....');
@@ -122,7 +121,9 @@ export async function MessageCreate(
       data: {
         action: 'chat',
         payload: {
-          model: 'mistral:7b',
+          channelId: message.channelId,
+          userId: message.author.id,
+          messageId: message.id,
           hasMention: hasMention,
           messages: [
             { role: 'system', content: system },
@@ -131,25 +132,8 @@ export async function MessageCreate(
         },
       },
     })
-    // // Get the LLM engine
-    // const engine = getLlmClient();
 
-    // // Get the response from the LLM engine
-    // const response = await engine.chat({
-    //   model: 'mistral:7b',
-    //   messages: [
-    //     { role: 'system', content: system },
-    //     { role: 'user', content: message.content },
-    //   ],
-    // });
-
-    // if (hasMention) {
-    //   await responseHandler('reply', message, response.content);
-    // } else {
-    //   await responseHandler('send', message.channel, response.content);
-    // }
-
-    logger.debug('Successfully sent reply');
+    logger.debug('Processed Message');
   } catch (error) {
     logger.error('Error processing message:', (error as Error).message);
 

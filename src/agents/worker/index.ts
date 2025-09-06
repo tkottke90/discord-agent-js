@@ -10,6 +10,10 @@ import { createRedisInstance } from '../../redis.js';
 function setupMessageHandler(config: WorkerConfig, logger: Logger) {
   // Setup Redis
   const redisClient = createRedisInstance(config.redis, logger);
+
+  redisClient.on('error', err => logger.error('Redis Error', err));
+
+  redisClient.connect();
   
   logger.debug(`Redis Client Initialized`);
 
@@ -31,8 +35,21 @@ function setupMessageHandler(config: WorkerConfig, logger: Logger) {
   
   logger.debug(`LLM Clients Initialized: ${[...llmClients.keys()]}`);
 
-  return (message: WorkerRequest) => {
-    logger.debug(`Received message: ${JSON.stringify(message).substring(0, 20)}...`);
+  return (message: WorkerRequest<any>) => {
+    logger.debug(`Processing message: ${JSON.stringify(message).substring(0, 20)}...`);
+    
+    switch(message.action) {
+      case 'chat': { 
+        const { channelId } = message.payload as any;  
+
+        redisClient.publish('discord', JSON.stringify({ type: 'send:typing', channelId }));
+
+        break;
+      }
+      default:
+        break;
+    }
+
   }
 }
 

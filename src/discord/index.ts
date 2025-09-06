@@ -43,6 +43,14 @@ async function setupInternalListener(client: Client, logger: Logger) {
         });
         break;
 
+      case 'send:typing':
+        client.channels.fetch(data.channelId).then(channel => {
+          if (channel?.isTextBased() && 'sendTyping' in channel) {
+            channel.sendTyping();
+          }
+        });
+        break;
+
       case 'reply:message':
         client.channels.fetch(data.channelId).then(channel => {
           if (channel?.isTextBased() && 'messages' in channel) {

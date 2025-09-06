@@ -39,7 +39,7 @@ export class WorkerPool {
       llmClients: ConfigurationFile.get<LLMClientMap>('llmClients'),
     };
 
-    const worker = new Worker('./dist/agents/worker/index.js', { workerData: JSON.stringify(workerConfig) });
+    const worker = new Worker('./src/agents/worker/index.js', { workerData: JSON.stringify(workerConfig) });
 
     // Listen for responses
     worker.on('message', (message: WorkerResponse<WorkerRequest>) => {

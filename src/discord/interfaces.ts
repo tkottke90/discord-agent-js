@@ -22,6 +22,7 @@ export interface MessageReplier {
 
 export type DiscordEvents =
   | { type: 'send:channel'; channelId: string; message: string }
+  | { type: 'send:typing'; channelId: string; }
   | { type: 'send:user'; userId: string; message: string }
   | {
       type: 'reply:message';
