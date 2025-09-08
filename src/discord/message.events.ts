@@ -79,6 +79,10 @@ export async function MessageCreate(
 ) {
   const logger = new Logger('Discord.MessageCreate');
 
+  logger.info(
+    `Message Received [Author: ${message.author.username}] [Message: ${message.content.slice(0, 20)}...]`,
+  );
+
   if (message.author.bot) {
     logger.debug('Message Created By Bot, Ignored....');
     return;
@@ -91,10 +95,6 @@ export async function MessageCreate(
     logger.debug(`Voice channel [  ${guild} ] - [ ${channel} ], ignored...`);
     return;
   }
-
-  logger.info(
-    `Message Received [Author: ${message.author.username}] [Message: ${message.content.slice(0, 20)}...]`,
-  );
 
   try {
     // Check if bot has necessary permissions

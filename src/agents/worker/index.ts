@@ -1,7 +1,7 @@
 import { parentPort, workerData, isMainThread } from 'node:worker_threads';
 import { Logger } from '../../utils/logging.js';
 import { Job, WorkerConfig } from '../types/pool.js';
-import { STATE } from '../types/worker.js';
+import { STATE, WorkerResponse } from '../types/worker.js';
 import { OllamaClient, OllamaConfig } from '../llm-clients/ollama.client.js';
 import { DigitalOceanAIClient, DOAIConfig } from '../llm-clients/digital-ocean.client.js';
 import { LLMClientConfig } from '../types/client.js';
@@ -55,6 +55,14 @@ class Worker {
     this.logger.debug(`Finished Processing Job ${job.jobId}`);
     await this.setStatus(STATE.IDLE);
     await setWorkerJob(this.id, '', this.redisClient);
+
+    // Respond to Pool
+    const response: WorkerResponse = {
+      action: 'response:complete',
+      job: jobId
+    }
+
+    parentPort?.postMessage(response)
   } 
 
 

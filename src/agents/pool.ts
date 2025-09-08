@@ -36,11 +36,21 @@ export class WorkerPool {
         case 'response:complete': {
           this.logger.info(`Completed Job ${message.job}`);
 
-          // Remove Job from Redis
-          redis.getClient()
-            .del(message.job)
+          // Get Job keys
+          const r = await redis.getClient()
 
-          this.logger.debug(`Deleted Job ${message.job}`)
+          const keys = await r.keys(`job:${message.job}:*`)
+
+          if (keys) {
+            // Remove Job from Redis
+            await redis.getClient()
+              .del(keys)
+  
+            // TODO - Archive Job
+            this.logger.debug(`Deleted Job ${message.job}`)
+          }
+
+          void this.assignAvailableWorkers();
 
           break;
         }
