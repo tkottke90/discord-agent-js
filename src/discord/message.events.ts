@@ -15,9 +15,7 @@ import {
   OllamaConfig,
 } from '../agents/llm-clients/ollama.client.js';
 import { LLMClientConfig } from '../agents/types/client.js';
-import { getClient } from '../redis.js';
-import { WorkerRequest } from '../agents/types/worker.js';
-import {  } from '../agents/pool.js';
+import { RESPONSE_TYPE } from '../agents/types/worker.js';
 import { getPool } from '../agents/index.js';
 
 const system = `# ROLE
@@ -118,13 +116,13 @@ export async function MessageCreate(
 
     getPool().addJob({
       engine: 'digitalocean',
-      data: {
+      data: {  // TODO: Update the Type
         action: 'chat',
         payload: {
           channelId: message.channelId,
           userId: message.author.id,
           messageId: message.id,
-          hasMention: hasMention,
+          response: hasMention ? RESPONSE_TYPE.SEND_CHANNEL : RESPONSE_TYPE.SEND_USER,
           messages: [
             { role: 'system', content: system },
             { role: 'user', content: message.content },

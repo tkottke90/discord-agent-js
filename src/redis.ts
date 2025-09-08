@@ -59,3 +59,6 @@ export async function clone() {
 
   return clonedClient;
 }
+
+
+export type RedisClient = ReturnType<typeof createRedisInstance>;

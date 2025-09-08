@@ -3,6 +3,8 @@ import { Logger } from '../utils/logging.js';
 import { STATE, WorkerRequest, WorkerResponse } from './types/worker.js';
 
 async function messageReducer(message: WorkerRequest): Promise<WorkerResponse> {
+  
+ 
   switch (message.action) {
     case 'status':
       return {

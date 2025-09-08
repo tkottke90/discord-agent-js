@@ -1,22 +1,11 @@
 import { WorkerPool } from './pool.js';
-import ConfigurationFile from 'config';
-import type { WorkerPoolConfig } from './types/worker.js';
-import { Logger } from '../utils/logging.js';
 
 // Create Pool Singleton
 const pool = new WorkerPool();
-const logger = new Logger('Agents');
 
 // Initialize Pool
-export function initialize() {
-  logger.debug('Initializing Agents...');
-
-  const workers = ConfigurationFile.get<WorkerPoolConfig>('workers');
-
-  logger.debug(`Adding ${workers.min} workers`);
-  for (let i = 0; i < workers.min; i++) {
-    pool.addWorker();
-  }
+export async function initialize() {
+  await pool.initialize();
 }
 
 // Share pool with rest of app

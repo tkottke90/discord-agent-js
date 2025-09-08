@@ -42,7 +42,7 @@ export default async function createApp(
   });
 
   // Start Agents
-  Agents.initialize();
+  await Agents.initialize();
 
   // Start Discord Bot
   createDiscordBot();
